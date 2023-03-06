@@ -36,6 +36,31 @@ static int cmd_q(char *args) {
   return -1;
 }
 
+static int cmd_si(char *args) {
+  if(args == NULL){
+	  cpu_exec(1);
+	  return 1;
+  }
+  else{
+	  int n = atoi(args);
+	  cpu_exec(n);
+	  return 1;
+  }
+}
+
+static int cmd_info(char *args) {
+  switch(*args) {
+	  case 'r':
+		  print_regs();
+		  break;
+	  /*case 'w':
+		  print_watchpoint();
+		  break;*/
+	  default: return 1;
+  }
+  return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -46,7 +71,9 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
+  { "si", "Execute for n instructions and then stop", cmd_si },
+  { "info", "Print program state", cmd_info },
+  
   /* TODO: Add more commands */
 
 };
