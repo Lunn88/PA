@@ -83,8 +83,10 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Execute for n instructions and then stop", cmd_si },
+  { "si", "Execute n instructions and then stop", cmd_si },
   { "info", "Print program state", cmd_info },
+  { "x" , "Print len memory start from addr", cmd_x },
+
   
   /* TODO: Add more commands */
 
