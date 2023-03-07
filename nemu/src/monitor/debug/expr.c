@@ -139,12 +139,12 @@ bool check_parentheses(int p ,int q){
 	else if(tokens[i].type == ')')
 	   	tag--;
         if(tag < 0)
-		panic("Error: 括号错误！\n");
+		panic("Error: parentheses does not match!\n");
 	if(tag == 0 && i < q)
 		flag = 0;
   }
   if(tag != 0)
-	panic("Error: 括号错误！\n");
+	panic("Error: parentheses does not match!\n");
   if(flag == 0)
 	return false;
   return true;
