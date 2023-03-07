@@ -62,15 +62,15 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char* args) {
-	int len, addr;
-	sscanf(args, "%d 0x%x", &len, &addr);
-	for(int i = 1; i <= len; i++) {
-		printf("0x%x ", addr);
-		int tmp = vaddr_read(addr, 4);
-		printf("0x%x\n", tmp);
-		addr += 4;
-	}
-	return 0;
+  int len, addr;
+  sscanf(args, "%d 0x%x", &len, &addr);
+  for(int i = 1; i <= len; i++) {
+	  printf("0x%x ", addr);
+	  int tmp = vaddr_read(addr, 4);
+	  printf("0x%x\n", tmp);
+	  addr += 4;
+  }
+  return 0;
 }
 
 static int cmd_help(char *args);
@@ -86,10 +86,8 @@ static struct {
   { "si", "Execute n instructions and then stop", cmd_si },
   { "info", "Print program state", cmd_info },
   { "x" , "Print len memory start from addr", cmd_x },
-
   
   /* TODO: Add more commands */
-
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))
