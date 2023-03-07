@@ -82,7 +82,6 @@ static int cmd_x(char* args) {
   }
   bool success = true;
   vaddr_t addr = expr(EXPR, &success);
-  printf("%d\n", expr(EXPR, &success));
   if (!success){
     printf("Error: wrong expr!\n");
     return 0;
