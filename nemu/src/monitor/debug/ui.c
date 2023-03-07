@@ -76,6 +76,7 @@ static int cmd_x(char* args) {
   
   int  n = atoi(arg);
   char *EXPR = strtok(NULL, " ");
+  printf("%s\n", EXPR);
   if(EXPR == NULL){
     printf("Error: no parameter addr!\n");
     return 0;
@@ -88,9 +89,9 @@ static int cmd_x(char* args) {
   }
   for(int i = 0; i < n; i++){
     uint32_t data = vaddr_read(addr + i * 4, 4);
-    printf("0x%08x	", addr + i * 4);
+    printf("0x%08x\t", addr + i * 4);
     for(int j = 0; j < 4; j++){
-      printf("0x%02x	" , data & 0xff);
+      printf("0x%02x\t" , data & 0xff);
       data = data >> 8;
     }
     printf("\n");
