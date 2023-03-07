@@ -76,13 +76,13 @@ static int cmd_x(char* args) {
   
   int  n = atoi(arg);
   char *EXPR = strtok(NULL, " ");
-  printf("%s\n", EXPR);
   if(EXPR == NULL){
     printf("Error: no parameter addr!\n");
     return 0;
   }
   bool success = true;
   vaddr_t addr = expr(EXPR, &success);
+  printf("%d\n", expr(EXPR, &success));
   if (!success){
     printf("Error: wrong expr!\n");
     return 0;
