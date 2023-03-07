@@ -61,7 +61,7 @@ static int cmd_info(char *args) {
   return 0;
 }
 
-static int cmd_x(char* args) {
+/*static int cmd_x(char* args) {
   int len, addr;
   sscanf(args, "%d 0x%x", &len, &addr);
   for(int i = 1; i <= len; i++) {
@@ -71,7 +71,7 @@ static int cmd_x(char* args) {
 	  addr += 4;
   }
   return 0;
-}
+}*/
 
 static int cmd_help(char *args);
 
@@ -85,7 +85,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "si", "Execute n instructions and then stop", cmd_si },
   { "info", "Print program state", cmd_info },
-  { "x" , "Print len memory start from addr", cmd_x },
+  //{ "x" , "Print len memory start from addr", cmd_x },
   
   /* TODO: Add more commands */
 };
