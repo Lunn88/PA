@@ -202,12 +202,12 @@ int dominant_operator(int p, int q) {
 uint32_t eval(int p, int q) {
   if(p > q)
     return -1;
+    
   else if (p == q) {
     // Single token
 
     if(tokens[p].type == TK_DEC)
       return atoi(tokens[p].str);
-    
     else if(tokens[p].type == TK_HEX){
       int tmp;
       sscanf(tokens[p].str, "%x", &tmp);
@@ -218,79 +218,84 @@ uint32_t eval(int p, int q) {
       char *str2;
       if(strcmp(tokens[p].str, "$EAX") == 0 || strcmp(tokens[p].str, "$eax") == 0){
 	sprintf(str1, "%8x", cpu.eax);
-}
+      }
       else if(strcmp(tokens[p].str, "$EBX") == 0 || strcmp(tokens[p].str, "$ebx") == 0){
 	sprintf(str1, "%8x", cpu.ebx);
-}
+      }
       else if(strcmp(tokens[p].str, "$ECX") == 0 || strcmp(tokens[p].str, "$ecx") == 0){
 	sprintf(str1, "%8x", cpu.ecx);
-}
+      }
       else if(strcmp(tokens[p].str, "$EDX") == 0 || strcmp(tokens[p].str, "$edx") == 0){
 	sprintf(str1, "%8x", cpu.edx);
-}
+      }
       else if(strcmp(tokens[p].str, "$EBP") == 0 || strcmp(tokens[p].str, "$ebp") == 0){
 	sprintf(str1, "%8x", cpu.ebp);
-}
+      }
       else if(strcmp(tokens[p].str, "$ESP") == 0 || strcmp(tokens[p].str, "$esp") == 0){
 	sprintf(str1, "%8x", cpu.esp);
-}
+      }
       else if(strcmp(tokens[p].str, "$ESI") == 0 || strcmp(tokens[p].str, "$esi") == 0){
 	sprintf(str1, "%8x", cpu.esi);
-}
+      }
       else if(strcmp(tokens[p].str, "$EDI") == 0 || strcmp(tokens[p].str, "$edi") == 0){
 	sprintf(str1, "%8x", cpu.edi);
-}
+      }
       else if(strcmp(tokens[p].str, "$AX") == 0 || strcmp(tokens[p].str, "$ax") == 0){
 	sprintf(str1, "%8x", cpu.eax & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$BX") == 0 || strcmp(tokens[p].str, "$bx") == 0){
 	sprintf(str1, "%8x", cpu.ebx & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$CX") == 0 || strcmp(tokens[p].str, "$cx") == 0){
 	sprintf(str1, "%8x", cpu.ecx & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$DX") == 0 || strcmp(tokens[p].str, "$dx") == 0){
 	sprintf(str1, "%8x", cpu.edx & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$BP") == 0 || strcmp(tokens[p].str, "$bp") == 0){
 	sprintf(str1, "%8x", cpu.ebp & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$SP") == 0 || strcmp(tokens[p].str, "$sp") == 0){
 	sprintf(str1, "%8x", cpu.esp & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$SI") == 0 || strcmp(tokens[p].str, "$si") == 0){
 	sprintf(str1, "%8x", cpu.esi & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$DI") == 0 || strcmp(tokens[p].str, "$di") == 0){
 	sprintf(str1, "%8x", cpu.edi & 0xffff);
-}
+      }
       else if(strcmp(tokens[p].str, "$AH") == 0 || strcmp(tokens[p].str, "$ah") == 0){
 	sprintf(str1, "%8x", (cpu.eax >> 8) & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$AL") == 0 || strcmp(tokens[p].str, "$al") == 0){
 	sprintf(str1, "%8x", cpu.eax & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$BH") == 0 || strcmp(tokens[p].str, "$bh") == 0){
 	sprintf(str1, "%8x", (cpu.ebx >> 8) & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$BL") == 0 || strcmp(tokens[p].str, "$bl") == 0){
 	sprintf(str1, "%8x", cpu.ebx & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$CH") == 0 || strcmp(tokens[p].str, "$ch") == 0){
 	sprintf(str1, "%8x", (cpu.ecx >> 8) & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$CL") == 0 || strcmp(tokens[p].str, "$cl") == 0){
 	sprintf(str1, "%8x", cpu.ecx & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$DH") == 0 || strcmp(tokens[p].str, "$dh") == 0){
 	sprintf(str1, "%8x", (cpu.edx >> 8) & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$DL") == 0 || strcmp(tokens[p].str, "$dl") == 0){
 	sprintf(str1, "%8x", cpu.edx & 0xff);
-}
+      }
       else if(strcmp(tokens[p].str, "$eip") == 0){
                 sprintf(str1, "%8x", cpu.eip);
-}
+      }
+      uint32_t num = strtol(str1, &str2, 16);
+      return num;
+    }
+    panic("Error: wrong tokens[%d]!", p);
+    }  
       else if(check_parentheses(p, q) == true)
 	return eval(p + 1, q - 1);
       else {
@@ -324,12 +329,9 @@ uint32_t eval(int p, int q) {
 	  default: panic("Error: tokens[%d]=%s, val1=%d, val2=%d\n", op, tokens[op].str, val1, val2);
 	}
       }
-    }
-  }
 }
 
 uint32_t expr(char *e, bool *success) {
-  printf("expr\n");
   if (!make_token(e)) {
     *success = false;
     return 0;
