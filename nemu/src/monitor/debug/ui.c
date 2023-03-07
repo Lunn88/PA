@@ -39,38 +39,63 @@ static int cmd_q(char *args) {
 static int cmd_si(char *args) {
   if(args == NULL){
 	  cpu_exec(1);
-	  return 1;
   }
   else{
-	  int n = atoi(args);
-	  cpu_exec(n);
-	  return 1;
+	  cpu_exec(atoi(args));
   }
+  return 0;
 }
 
 static int cmd_info(char *args) {
   switch(*args) {
 	  case 'r':
-		  print_regs();
+		  printf("EAX : %x\n", cpu.eax);
+		  printf("EBX : %x\n", cpu.ebx);
+		  printf("ECX : %x\n", cpu.ecx);
+		  printf("EDX : %x\n", cpu.edx);
+		  printf("ESP : %x\n", cpu.esp);
+		  printf("EBP : %x\n", cpu.ebp);
+		  printf("ESI : %x\n", cpu.esi); 
+		  printf("EDI : %x\n", cpu.edi);
 		  break;
 	  /*case 'w':
 		  print_watchpoint();
 		  break;*/
-	  default: return 1;
+	  default: printf("Error: wrong input!\n");
   }
   return 0;
 }
 
 static int cmd_x(char* args) {
-  int len, addr;
-  sscanf(args, "%d 0x%x", &len, &addr);
-  for(int i = 1; i <= len; i++) {
-	  printf("0x%x ", addr);
-	  int tmp = vaddr_read(addr, 4);
-	  printf("0x%x\n", tmp);
-	  addr += 4;
+  char *arg = strtok(args, " ");
+  
+  if(arg == NULL){
+    printf("Error: no parameter n!\n");
+    return 0;
   }
-  return 0;
+  
+  int  n = atoi(arg);
+  char *EXPR = strtok(NULL, " ");
+  if(EXPR == NULL){
+    printf("Error: no parameter addr!\n");
+    return 0;
+  }
+  bool success = true;
+  vaddr_t addr = expr(EXPR, &success);
+  if (!success){
+    printf("Error: wrong expr!\n");
+    return 0;
+  }
+  for(int i = 0; i < n; i++){
+    uint32_t data = vaddr_read(addr + i * 4, 4);
+    printf("0x%08x	", addr + i * 4);
+    for(int j = 0; j < 4; j++){
+      printf("0x%02x	" , data & 0xff);
+      data = data >> 8;
+    }
+    printf("\n");
+  }
+return 0;
 }
 
 static int cmd_help(char *args);

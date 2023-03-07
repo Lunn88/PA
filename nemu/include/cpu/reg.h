@@ -63,13 +63,4 @@ static inline const char* reg_name(int index, int width) {
     default: assert(0);
   }
 }
-
-static void print_regs(){
-	for(int i = R_EAX; i <= R_EDI; i++){
-		printf("%s:0x%08x\n", regsl[i], cpu.gpr[i]._32);
-		// string and then 8 bit hex num
-	}
-	printf("eip:0x%08x\n", cpu.eip);
-}
-
 #endif
