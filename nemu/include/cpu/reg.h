@@ -69,7 +69,7 @@ static void print_regs(){
 		printf("%s:0x%08x\n", regsl[i], cpu.gpr[i]._32);
 		// string and then 8 bit hex num
 	}
-	printf("eip :0x%08x\n", cpu.eip);
+	printf("eip:0x%08x\n", cpu.eip);
 }
 
 #endif
