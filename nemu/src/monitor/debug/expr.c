@@ -8,12 +8,12 @@
 
 enum {
   TK_NOTYPE = 256,
-  TK_DEC,
-  TK_HEX,
   TK_EQ,
   TK_NEQ,
-  TK_NEG,
+  TK_DEC,
+  TK_HEX,
   TK_REG,
+  TK_NEG,
   TK_POINT,
   TK_AND,
   TK_OR
@@ -103,7 +103,19 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+	  case TKNOTYPE: break;
+
+          default:
+		strcpy(tokens[nr_token].str, substr_start, substr_len);
+		tokens[nr_token].str[substr_len] = '\0';
+		tokens[ne_token].type = rules[i].token_type;
+
+		if(tokens[nr_token].type == '*' && (nr_token == 0 || (tokens[nr_token-1].type != TK_10 && tokens[nr_token-1].type != TK_REG && tokens[nr_token-1].type != TK_16)))
+			tokens[nr_token].type = TK_POINT;
+                   if(tokens[nr_token].type == '-' && (nr_token == 0 || (tokens[nr_token-1].type != TK_10 && tokens[nr_token-1].type != TK_REG && tokens[nr_token-1].type != TK_16)))
+	                tokens[nr_token].type = TK_NEG;
+		nr_token++;
+		break;
         }
 
         break;
@@ -125,8 +137,99 @@ uint32_t expr(char *e, bool *success) {
     return 0;
   }
 
-  /* TODO: Insert codes to evaluate the expression. */
-  TODO();
+  for(int i = 0; i < nr_token; i++)
+	  Log("tokens[%d]: '%s' (%d)", i, tokens[i].str, tokens[i].type);
 
-  return 0;
+  /* TODO: Insert codes to evaluate the expression. */
+  
+  uint32_t result = eval(0, nr_token - 1);
+
+  return result;
+}
+
+
+bool check_parentheses(int p ,int q){
+  int tag = 0, flag = 1;
+  for(int i = p; i <= q; i++){
+	if(tokens[i].type == '(')
+	   	tag++;
+	else if(tokens[i].type == ')')
+	   	tag--;
+        if(tag < 0)
+		panic("Error: 括号错误！\n");
+	if(tag == 0 && i < q)
+		flag = 0;
+  }
+  if(tag != 0)
+	panic("Error: 括号错误！\n");
+  if(flag == 0)
+	return false;
+  return true;
+}
+
+int dominant_operator(int p, int q) {
+  int dominant = p, left = 0, flag = 0;
+  for(int i = p; i <= q; i++) {
+    if(tokens[i].type == '(') {
+      left++;
+      i++;
+      while(true) {
+	if(tokens[i].type == '(')
+	  left++;
+	else if(tokens[i].type == ')')
+	  left--;
+	i++;
+	if(left == 0)
+	  break;
+      }
+      if(i > q)
+	break;
+    }
+    if(tokens[i].type == TK_DEC || tokens[i].type == TK_HEX || tokens[i].type == TK_REG)
+      continue;
+    if(op_precedence(tokens[i].type) >= flag) {
+	    flag = op_precedence(tokens[i].type);
+	    dominant = i;
+	    char dest[255] = "\0";
+	    for(int j = p; j <= q; j++)
+		    strcat(dest, tokens[j].str);
+	    Log("The dominant of %s is tokens[%d] = '%s'", dest, dominanat, tokens[dominant].str);
+    }
+  }
+  return dominant;
+}
+
+int op_precedence(int op){
+	if(op == 259 || op == 260) // "==", "!="
+		return 7;
+	else if(op == '+' || op == '-')
+		return 4;
+	else if(op == '*' || op == '/' || op == '%')
+		return 3;
+	else if(op == 261 || op ==263) // TK_NEG, TK_POINT
+		return 2;
+	else if(op == 264) // "&&"
+		return 11;
+	else if(op == 265) // "||"
+		return 12;
+	else
+		return 0;
+}
+
+uint32_t eval(int p, int q) {
+  if(p > q)
+    return -1;
+  else if (p == q) {
+    // Single token
+
+    if(tokens[p].type == TK_DEC)
+      return atoi(tokens[p].str);
+    
+    else if(tokens[p].type == TK_HEX){
+      int tmp;
+      sscanf(tokens[p].str, "%x", &tmp);
+      return tmp;
+    }
+
+
 }
