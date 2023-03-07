@@ -27,6 +27,8 @@ char* rl_gets() {
   return line_read;
 }
 
+static int cmd_help(char *args);
+
 static int cmd_c(char *args) {
   cpu_exec(-1);
   return 0;
@@ -61,7 +63,17 @@ static int cmd_info(char *args) {
   return 0;
 }
 
-static int cmd_help(char *args);
+static int cmd_x(char* args) {
+	int len, addr;
+	sscanf(args, "%d 0x%x", &len, &addr);
+	for(int i = 1; i <= len; i++) {
+		printf("0x%x ", addr);
+		int tmp = vaddr_read(addr, 4);
+		printf("0x%x\n", tmp);
+		addr += 4;
+	}
+	return 0;
+}
 
 static struct {
   char *name;
