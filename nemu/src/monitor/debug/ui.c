@@ -47,6 +47,11 @@ static int cmd_si(char *args) {
 }
 
 static int cmd_info(char *args) {
+  if(args == NULL) {
+    printf("Error: missing arguments!");
+    return 0;
+  }
+    
   switch(*args) {
 	  case 'r':
 		  printf("EAX : %x\n", cpu.eax);
@@ -70,22 +75,24 @@ static int cmd_x(char* args) {
   char *arg = strtok(args, " ");
   
   if(arg == NULL){
-    printf("Error: no parameter n!\n");
+    printf("Error: missing argument n!\n");
     return 0;
   }
   
   int  n = atoi(arg);
   char *EXPR = strtok(NULL, " ");
   if(EXPR == NULL){
-    printf("Error: no parameter addr!\n");
+    printf("Error: missing argument addr!\n");
     return 0;
   }
+  
   bool success = true;
   vaddr_t addr = expr(EXPR, &success);
-  if (!success){
+  if (success == false){
     printf("Error: wrong expr!\n");
     return 0;
   }
+  
   for(int i = 0; i < n; i++){
     uint32_t data = vaddr_read(addr + i * 4, 4);
     printf("0x%08x\t", addr + i * 4);
