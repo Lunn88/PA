@@ -48,7 +48,7 @@ static int cmd_si(char *args) {
 
 static int cmd_info(char *args) {
   if(args == NULL) {
-    printf("Error: missing arguments!");
+    printf("Error: missing arguments!\n");
     return 0;
   }
     
