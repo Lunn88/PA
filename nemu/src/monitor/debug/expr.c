@@ -16,7 +16,7 @@ enum {
   TK_NEG,
   TK_POINT,
   TK_AND,
-  TK_OR
+  TK_OR,
 
   /* TODO: Add more token types */
 
