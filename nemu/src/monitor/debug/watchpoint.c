@@ -82,6 +82,7 @@ int check_wp(){
   if(head != NULL){
     WP *p = head;
     bool changed = false;
+    
     while(p != NULL){
       bool success = true;
       uint32_t new_value = expr(p->expr, &success);
