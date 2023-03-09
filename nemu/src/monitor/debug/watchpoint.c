@@ -71,7 +71,7 @@ void free_wp(int n){
   p->next = wp_n->next;
   wp_n->next = free_;
   free_ = wp_n;
-  printf("Watchpoint No.%d has been deleted!\n");
+  printf("Watchpoint No.%d has been deleted!\n", wp_n->NO);
   return;
 }
   
