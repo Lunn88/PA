@@ -40,6 +40,7 @@ WP* new_wp(char *exp){
   wp->next = NULL;
   
   bool success = false;
+  printf("%s\n", exp);
   wp->value = expr(wp->expr, &success);
   if(success == false)
     panic("Error: wrong expression!\n");
