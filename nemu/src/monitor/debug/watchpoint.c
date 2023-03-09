@@ -39,7 +39,7 @@ WP* new_wp(char *exp){
   strcpy(wp->expr, exp);
   wp->next = NULL;
   
-  bool success = false;
+  bool success = true;
   printf("%s\n", exp);
   wp->value = expr(wp->expr, &success);
   if(success == false)
