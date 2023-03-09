@@ -61,10 +61,10 @@ void free_wp(int n){
   if(p == NULL)
     panic("Error: watchpoint pool is empty!\n");
   
-  while(p->next->NO != n){
+  while(p->NO != n){
     if(p->next == NULL)
       panic("Error: no such watchpoint!\n");
-    p = p->next;
+    else p = p->next;
   }
   printf("777\n");
   
