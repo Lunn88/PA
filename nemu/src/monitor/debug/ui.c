@@ -121,6 +121,7 @@ static int cmd_d(char *args){
   }
   int n = atoi(args);
   free_up(n);
+  return 0;
 }
 
 static int cmd_help(char *args);
