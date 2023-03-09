@@ -120,6 +120,7 @@ static int cmd_d(char *args){
     return 0;
   }
   int n = atoi(args);
+  printf("%s, %d\n", args, n);
   free_wp(n);
   return 0;
 }
