@@ -40,7 +40,6 @@ WP* new_wp(char *exp){
   wp->next = NULL;
   
   bool success = true;
-  printf("%s\n", exp);
   wp->value = expr(wp->expr, &success);
   if(success == false)
     panic("Error: wrong expression!\n");
@@ -85,7 +84,6 @@ int check_wp(){
       if(success && (new_value != p->value)){
         printf("Watchpoint No.%d's value has changed from %d to %d\n", p->NO, p->value, new_value);
         p->value = new_value;
-        return 1;
       }
       p = p->next;
     }
