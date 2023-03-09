@@ -64,11 +64,12 @@ void free_wp(int n){
   while(p->NO != n){
     if(p->next == NULL)
       panic("Error: no such watchpoint!\n");
-    else p = p->next;
+    else 
+      p = p->next;
   }
   printf("777\n");
   
-  WP *wp_n = p->next;
+  WP *wp_n = p;
   p->next = wp_n->next;
   wp_n->next = free_;
   free_ = wp_n;
