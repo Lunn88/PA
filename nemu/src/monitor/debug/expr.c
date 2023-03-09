@@ -138,13 +138,17 @@ bool check_parentheses(int p ,int q){
 	   	tag++;
 	else if(tokens[i].type == ')')
 	   	tag--;
-        if(tag < 0)
-		panic("Error: parentheses does not match!\n");
+        if(tag < 0) {
+		printf("Error: parentheses does not match!\n");
+		return false;
+	}
 	if(tag == 0 && i < q)
 		flag = 0;
   }
-  if(tag != 0)
-	panic("Error: parentheses does not match!\n");
+  if(tag != 0) {
+	printf("Error: parentheses does not match!\n");
+  	return false;
+  }
   if(flag == 0)
 	return false;
   return true;
@@ -294,7 +298,7 @@ uint32_t eval(int p, int q) {
       uint32_t num = strtol(str1, &str2, 16);
       return num;
     }
-    panic("Error: wrong tokens[%d]!", p);
+    panic("Error: wrong tokens[%d]!\n", p);
     }  
       else if(check_parentheses(p, q) == true)
 	return eval(p + 1, q - 1);
@@ -308,12 +312,12 @@ uint32_t eval(int p, int q) {
 	  case '*': return val1 * val2;
 	  case '/': 
 		if(val2 == 0)
-		  panic("Error: divide zero!");
+		  panic("Error: divide zero!\n");
 		else
 		  return val1 / val2;
 	  case '%':
 		if(val2 == 2)
-		  panic("Error: mode zero!");
+		  panic("Error: mode zero!\n");
 		else
 		  return val1 % val2;
 	  case 257: return (val1 == val2);

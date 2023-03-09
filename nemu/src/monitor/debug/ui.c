@@ -110,7 +110,7 @@ static int cmd_w(char *args){
     printf("Error: missing arguments!\n");
     return 0;
   }
-  WP *wp = new_wp(args);
+  new_wp(args);
   return 0;
 }
 
