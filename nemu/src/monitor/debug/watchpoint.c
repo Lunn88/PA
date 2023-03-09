@@ -67,7 +67,8 @@ void free_wp(int n){
     else 
       p = p->next;
   }
-  printf("777\n");
+  if(p == head)
+    head = NULL;
   
   WP *wp_n = p;
   p->next = wp_n->next;
