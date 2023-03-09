@@ -81,16 +81,21 @@ void free_wp(int n){
 int check_wp(){
   if(head != NULL){
     WP *p = head;
+    bool changed = false;
     while(p != NULL){
       bool success = true;
       uint32_t new_value = expr(p->expr, &success);
       if(success && (new_value != p->value)){
         printf("Watchpoint No.%d's value has changed from %d to %d\n", p->NO, p->value, new_value);
         p->value = new_value;
+        changed = true;
       }
       p = p->next;
     }
-    return 1;
+    if(changed == true)
+      return 1;
+    else
+      return 0;
   }
   else return 0;
 } 
