@@ -63,9 +63,9 @@ static int cmd_info(char *args) {
 		  printf("ESI : %x\n", cpu.esi); 
 		  printf("EDI : %x\n", cpu.edi);
 		  break;
-	  /*case 'w':
-		  print_watchpoint();
-		  break;*/
+	  case 'w':
+		  print_wp();
+		  break;
 	  default: printf("Error: wrong input!\n");
   }
   return 0;
@@ -105,6 +105,17 @@ static int cmd_x(char* args) {
 return 0;
 }
 
+static int cmd_w(char *args){
+  if(args == NULL){
+    printf("Error: missing arguments!\n");
+    return 0;
+  }
+  WP *wp = new_wp(args);
+  printf("Watchpoint No.%d:%s has been set\n", wp->NO, wp->expr);
+  return 0;
+}
+
+
 static int cmd_help(char *args);
 
 static struct {
@@ -118,6 +129,7 @@ static struct {
   { "si", "Execute n instructions and then stop", cmd_si },
   { "info", "Print program state", cmd_info },
   { "x" , "Print len memory start from addr", cmd_x },
+  { "w" , "Set watchpoint", cmd_w},
   
   /* TODO: Add more commands */
 };
