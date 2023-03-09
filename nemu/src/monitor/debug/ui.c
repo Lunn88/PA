@@ -79,7 +79,7 @@ static int cmd_x(char* args) {
     return 0;
   }
   
-  int  n = atoi(arg);
+  int n = atoi(arg);
   char *EXPR = strtok(NULL, " ");
   if(EXPR == NULL){
     printf("Error: missing argument addr!\n");
@@ -111,10 +111,17 @@ static int cmd_w(char *args){
     return 0;
   }
   WP *wp = new_wp(args);
-  printf("Watchpoint No.%d:%s has been set\n", wp->NO, wp->expr);
   return 0;
 }
 
+static int cmd_d(char *args){
+  if(args == NULL){
+    printf("Error: missing arguments!\n");
+    return 0;
+  }
+  int n = atoi(args);
+  free_up(n);
+}
 
 static int cmd_help(char *args);
 
@@ -130,6 +137,7 @@ static struct {
   { "info", "Print program state", cmd_info },
   { "x" , "Print len memory start from addr", cmd_x },
   { "w" , "Set watchpoint", cmd_w},
+  { "d" , "Delete watchpoint", cmd_d},
   
   /* TODO: Add more commands */
 };

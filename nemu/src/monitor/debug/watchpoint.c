@@ -53,6 +53,7 @@ WP* new_wp(char *exp){
       p = p->next;
     p->next = wp;
   }
+  printf("Watchpoint No.%d:%s has been set!\n", wp->NO, wp->expr);
   return wp;
 }
    
@@ -71,7 +72,7 @@ void free_wp(int n){
   p->next = wp_n->next;
   wp_n->next = free_;
   free_ = wp_n;
-  printf("Watchpoint No.%d has been deleted!\n", wp_n->NO);
+  printf("Watchpoint No.%d:%s has been deleted!\n", wp_n->NO, wp_n->expr);
   return;
 }
   
@@ -83,6 +84,7 @@ int check_wp(){
       uint32_t new_value = expr(p->expr, &success);
       if(success && (new_value != p->value)){
         printf("Watchpoint No.%d's value has changed from %d to %d\n", p->NO, p->value, new_value);
+        p->value = new_value;
         return 1;
       }
       p = p->next;
