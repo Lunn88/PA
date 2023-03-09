@@ -57,10 +57,10 @@ WP* new_wp(char *exp){
 }
    
 void free_wp(int n){
-  printf("777\n");
   WP *p = head;
   if(p == NULL)
     panic("Error: watchpoint pool is empty!\n");
+  printf("777\n");
   
   while(p->next->NO != n){
     if(p->next == NULL)
