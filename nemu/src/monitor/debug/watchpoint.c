@@ -87,8 +87,9 @@ int check_wp(){
       }
       p = p->next;
     }
+    return 1;
   }
-  return 0;
+  else return 0;
 } 
   
 void print_wp(){
