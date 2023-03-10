@@ -66,35 +66,52 @@ void free_wp(int n){
     return;
   }
   
-  while(p->NO != n) {
-    if(p->next == NULL) {
-      printf("Error: no such watchpoint!\n");
-      return;
-    }
-    else 
-      p = p->next;
+  if(p->NO == n) {
+    head = p->next;
+    p->next = free_->next;
+    free_->next = p;
+    printf("Watchpoint No.%d:%s has been deleted!\n", p->NO, p->expr);
+    return;
   }
-  if(p == head)
-    head = NULL;
   
-  WP *wp_n = p;
-  p->next = wp_n->next;
-  wp_n->next = free_;
-  free_ = wp_n;
-  printf("Watchpoint No.%d:%s has been deleted!\n", wp_n->NO, wp_n->expr);
-  return;
+  while(p->next != NULL && p->next->NO != n) {
+    p = p->next;
+  }
+  // p->next is the n or p(head) is the n.
+  
+  if(p == head && p->NO == n) {
+    head = NULL;
+    p->next = free_->next;
+    free_->next = p;
+    printf("Watchpoint No.%d:%s has been deleted!\n", p->NO, p->expr);
+    return;
+  }
+  else if(p->next != NULL && p->next->NO == n) {
+    WP *d_p = p->next;
+    p->next = d_p->next;
+    d_p->next = free_->next;
+    free_->next = d_p;
+    printf("Watchpoint No.%d:%s has been deleted!\n", d_p->NO, d_p->expr);
+    return;
+  }
+  else {
+    printf("Error: no such watchpoint!\n");
+    return;
+  }
 }
   
 bool check_wp(){
   bool changed = false;
   if(head != NULL){
     WP *p = head;
-    
     while(p != NULL){
       bool success = true;
       uint32_t new_value = expr(p->expr, &success);
-      if(success && (new_value != p->value)){
-        printf("Watchpoint No.%d's value has changed from %d to %d\n", p->NO, p->value, new_value);
+      if(success == false)
+        panic("Error: wrong token!\n");
+      
+      if(new_value != p->value){
+        printf("Watchpoint No.%d:%s's value has changed from %d to %d\n", p->NO, p->expr, p->value, new_value);
         p->value = new_value;
         changed = true;
       }
