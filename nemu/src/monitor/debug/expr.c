@@ -295,11 +295,10 @@ uint32_t eval(int p, int q) {
       else if(strcmp(tokens[p].str, "$eip") == 0){
                 sprintf(str1, "%8x", cpu.eip);
       }
-      uint32_t num = strtol(str1, &str2, 16);
-      return num;
+      return stoi(str1, 16);
     }
     panic("Error: wrong tokens[%d]!\n", p);
-    }  
+  }  
       else if(check_parentheses(p, q) == true)
 	return eval(p + 1, q - 1);
       else {
