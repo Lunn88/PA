@@ -71,6 +71,20 @@ static int cmd_info(char *args) {
   return 0;
 }
 
+static int cmd_p(char *args){
+	bool success = true;
+	if(args == NULL){
+		printf("Error: missing arguments!\n");
+	    return 0;
+	}
+	uint32_t result = expr(args, &success);
+	if(success)
+	  printf("Expresssion: %s = %d\n", args, result);
+	else 
+	  printf("Error: wrong expression!\n");
+    return 0;
+}
+
 static int cmd_x(char* args) {
   char *arg = strtok(args, " ");
   
@@ -136,6 +150,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
   { "si", "Execute n instructions and then stop", cmd_si },
   { "info", "Print program state", cmd_info },
+  { "p" , "Evaluate the result of the expression" , cmd_p },
   { "x" , "Print len memory start from addr", cmd_x },
   { "w" , "Set watchpoint", cmd_w},
   { "d" , "Delete watchpoint", cmd_d},
