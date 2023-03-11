@@ -89,12 +89,12 @@ static bool make_token(char *e) {
   while (e[position] != '\0') {
     /* Try all rules one by one. */
     for (i = 0; i < NR_REGEX; i ++) {
+      // match
       if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
         char *substr_start = e + position;
         int substr_len = pmatch.rm_eo;
-
         Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-            i, rules[i].regex, position, substr_len, substr_len, substr_start);
+            i, rules[i].regex, position, substr_len, substr_start);
         position += substr_len;
 
         /* TODO: Now a new token is recognized with rules[i]. Add codes
@@ -209,9 +209,9 @@ uint32_t eval(int p, int q) {
     
   else if (p == q) {
     // Single token
-
     if(tokens[p].type == TK_DEC)
       return atoi(tokens[p].str);
+      
     else if(tokens[p].type == TK_HEX){
       int tmp;
       sscanf(tokens[p].str, "%x", &tmp);
@@ -343,7 +343,7 @@ uint32_t expr(char *e, bool *success) {
 	  Log("tokens[%d]: '%s' (%d)", i, tokens[i].str, tokens[i].type);
 
   /* TODO: Insert codes to evaluate the expression. */
-  
+  printf("%d, %d", 0, nr_token-1);
   uint32_t result = eval(0, nr_token - 1);
 
   return result;
