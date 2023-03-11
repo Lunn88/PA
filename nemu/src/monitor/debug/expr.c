@@ -218,84 +218,85 @@ uint32_t eval(int p, int q) {
       return tmp;
     }
     else if(tokens[p].type == TK_REG) {
-      char str1[32] = "\0";
-      char *str2;
+      char str[32] = "\0";
       if(strcmp(tokens[p].str, "$EAX") == 0 || strcmp(tokens[p].str, "$eax") == 0){
-	sprintf(str1, "%8x", cpu.eax);
+	sprintf(str, "%8x", cpu.eax);
       }
       else if(strcmp(tokens[p].str, "$EBX") == 0 || strcmp(tokens[p].str, "$ebx") == 0){
-	sprintf(str1, "%8x", cpu.ebx);
+	sprintf(str, "%8x", cpu.ebx);
       }
       else if(strcmp(tokens[p].str, "$ECX") == 0 || strcmp(tokens[p].str, "$ecx") == 0){
-	sprintf(str1, "%8x", cpu.ecx);
+	sprintf(str, "%8x", cpu.ecx);
       }
       else if(strcmp(tokens[p].str, "$EDX") == 0 || strcmp(tokens[p].str, "$edx") == 0){
-	sprintf(str1, "%8x", cpu.edx);
+	sprintf(str, "%8x", cpu.edx);
       }
       else if(strcmp(tokens[p].str, "$EBP") == 0 || strcmp(tokens[p].str, "$ebp") == 0){
-	sprintf(str1, "%8x", cpu.ebp);
+	sprintf(str, "%8x", cpu.ebp);
       }
       else if(strcmp(tokens[p].str, "$ESP") == 0 || strcmp(tokens[p].str, "$esp") == 0){
-	sprintf(str1, "%8x", cpu.esp);
+	sprintf(str, "%8x", cpu.esp);
       }
       else if(strcmp(tokens[p].str, "$ESI") == 0 || strcmp(tokens[p].str, "$esi") == 0){
-	sprintf(str1, "%8x", cpu.esi);
+	sprintf(str, "%8x", cpu.esi);
       }
       else if(strcmp(tokens[p].str, "$EDI") == 0 || strcmp(tokens[p].str, "$edi") == 0){
-	sprintf(str1, "%8x", cpu.edi);
+	sprintf(str, "%8x", cpu.edi);
       }
       else if(strcmp(tokens[p].str, "$AX") == 0 || strcmp(tokens[p].str, "$ax") == 0){
-	sprintf(str1, "%8x", cpu.eax & 0xffff);
+	sprintf(str, "%8x", cpu.eax & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$BX") == 0 || strcmp(tokens[p].str, "$bx") == 0){
-	sprintf(str1, "%8x", cpu.ebx & 0xffff);
+	sprintf(str, "%8x", cpu.ebx & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$CX") == 0 || strcmp(tokens[p].str, "$cx") == 0){
-	sprintf(str1, "%8x", cpu.ecx & 0xffff);
+	sprintf(str, "%8x", cpu.ecx & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$DX") == 0 || strcmp(tokens[p].str, "$dx") == 0){
-	sprintf(str1, "%8x", cpu.edx & 0xffff);
+	sprintf(str, "%8x", cpu.edx & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$BP") == 0 || strcmp(tokens[p].str, "$bp") == 0){
-	sprintf(str1, "%8x", cpu.ebp & 0xffff);
+	sprintf(str, "%8x", cpu.ebp & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$SP") == 0 || strcmp(tokens[p].str, "$sp") == 0){
-	sprintf(str1, "%8x", cpu.esp & 0xffff);
+	sprintf(str, "%8x", cpu.esp & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$SI") == 0 || strcmp(tokens[p].str, "$si") == 0){
-	sprintf(str1, "%8x", cpu.esi & 0xffff);
+	sprintf(str, "%8x", cpu.esi & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$DI") == 0 || strcmp(tokens[p].str, "$di") == 0){
-	sprintf(str1, "%8x", cpu.edi & 0xffff);
+	sprintf(str, "%8x", cpu.edi & 0xffff);
       }
       else if(strcmp(tokens[p].str, "$AH") == 0 || strcmp(tokens[p].str, "$ah") == 0){
-	sprintf(str1, "%8x", (cpu.eax >> 8) & 0xff);
+	sprintf(str, "%8x", (cpu.eax >> 8) & 0xff);
       }
       else if(strcmp(tokens[p].str, "$AL") == 0 || strcmp(tokens[p].str, "$al") == 0){
-	sprintf(str1, "%8x", cpu.eax & 0xff);
+	sprintf(str, "%8x", cpu.eax & 0xff);
       }
       else if(strcmp(tokens[p].str, "$BH") == 0 || strcmp(tokens[p].str, "$bh") == 0){
-	sprintf(str1, "%8x", (cpu.ebx >> 8) & 0xff);
+	sprintf(str, "%8x", (cpu.ebx >> 8) & 0xff);
       }
       else if(strcmp(tokens[p].str, "$BL") == 0 || strcmp(tokens[p].str, "$bl") == 0){
-	sprintf(str1, "%8x", cpu.ebx & 0xff);
+	sprintf(str, "%8x", cpu.ebx & 0xff);
       }
       else if(strcmp(tokens[p].str, "$CH") == 0 || strcmp(tokens[p].str, "$ch") == 0){
-	sprintf(str1, "%8x", (cpu.ecx >> 8) & 0xff);
+	sprintf(str, "%8x", (cpu.ecx >> 8) & 0xff);
       }
       else if(strcmp(tokens[p].str, "$CL") == 0 || strcmp(tokens[p].str, "$cl") == 0){
-	sprintf(str1, "%8x", cpu.ecx & 0xff);
+	sprintf(str, "%8x", cpu.ecx & 0xff);
       }
       else if(strcmp(tokens[p].str, "$DH") == 0 || strcmp(tokens[p].str, "$dh") == 0){
-	sprintf(str1, "%8x", (cpu.edx >> 8) & 0xff);
+	sprintf(str, "%8x", (cpu.edx >> 8) & 0xff);
       }
       else if(strcmp(tokens[p].str, "$DL") == 0 || strcmp(tokens[p].str, "$dl") == 0){
-	sprintf(str1, "%8x", cpu.edx & 0xff);
+	sprintf(str, "%8x", cpu.edx & 0xff);
       }
       else if(strcmp(tokens[p].str, "$eip") == 0){
-                sprintf(str1, "%8x", cpu.eip);
+                sprintf(str, "%8x", cpu.eip);
       }
-      return stoi(str1, 16);
+      uint32_t tmp;
+      sscanf(str, "%x", &tmp);
+      return tmp;
     }
     panic("Error: wrong tokens[%d]!\n", p);
   }  
