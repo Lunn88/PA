@@ -343,7 +343,6 @@ uint32_t expr(char *e, bool *success) {
 	  Log("tokens[%d]: '%s' (%d)", i, tokens[i].str, tokens[i].type);
 
   /* TODO: Insert codes to evaluate the expression. */
-  printf("%d, %d", 0, nr_token-1);
   uint32_t result = eval(0, nr_token - 1);
 
   return result;
