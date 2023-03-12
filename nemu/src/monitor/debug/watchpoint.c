@@ -65,11 +65,19 @@ void free_wp(int n){
     return;
   }
   
-  if(head->NO == n && head->next == NULL) {
-    head->next = free_->next;
-    free_->next = head;
+  if(head->NO == n) {
     printf("Watchpoint No.%d:%s has been deleted!\n", head->NO, head->expr);
-    head = NULL;
+    if(head->next == NULL) {
+      head->next = free_->next;
+      free_->next = head;
+      head = NULL;
+    }
+    else {
+      WP *tmp = head->next;
+      head->next = free_->next;
+      free_->next = head;
+      head = tmp;
+    }
     return;
   }
   
