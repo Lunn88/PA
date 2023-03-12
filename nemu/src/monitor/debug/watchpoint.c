@@ -111,7 +111,7 @@ bool check_wp(){
         panic("Error: wrong token!\n");
       
       if(new_value != p->value){
-        printf("Watchpoint No.%d:%s's value has changed from %d to %d\n", p->NO, p->expr, p->value, new_value);
+        Log("Watchpoint No.%d:%s's value has changed from %d to %d\n", p->NO, p->expr, p->value, new_value);
         p->value = new_value;
         changed = true;
       }
