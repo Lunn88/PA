@@ -60,33 +60,25 @@ void new_wp(char *exp){
 }
    
 void free_wp(int n){
-  WP *p = head;
-  if(p == NULL) {
+  if(head == NULL) {
     printf("Error: watchpoint pool is empty!\n");
     return;
   }
   
-  if(p->NO == n) {
-    head = p->next;
-    p->next = free_->next;
-    free_->next = p;
-    printf("Watchpoint No.%d:%s has been deleted!\n", p->NO, p->expr);
+  if(head->NO == n) {
+    head->next = free_->next;
+    free_->next = head;
+    printf("Watchpoint No.%d:%s has been deleted!\n", head->NO, head->expr);
+    head = NULL;
     return;
   }
   
+  WP *p = head;
   while(p->next != NULL && p->next->NO != n) {
     p = p->next;
   }
-  // p->next is the n or p(head) is the n.
-  
-  if(p == head && p->NO == n) {
-    head = NULL;
-    p->next = free_->next;
-    free_->next = p;
-    printf("Watchpoint No.%d:%s has been deleted!\n", p->NO, p->expr);
-    return;
-  }
-  else if(p->next != NULL && p->next->NO == n) {
+  // p->next is the n is the n.
+  if(p->next != NULL && p->next->NO == n) {
     WP *d_p = p->next;
     p->next = d_p->next;
     d_p->next = free_->next;
