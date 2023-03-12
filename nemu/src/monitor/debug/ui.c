@@ -153,8 +153,7 @@ static struct {
   { "p" , "Evaluate the result of the expression" , cmd_p },
   { "x" , "Print len memory start from addr", cmd_x },
   { "w" , "Set watchpoint", cmd_w},
-  { "d" , "Delete watchpoint", cmd_d},
-  
+  { "d" , "Delete watchpoint", cmd_d}
   /* TODO: Add more commands */
 };
 
