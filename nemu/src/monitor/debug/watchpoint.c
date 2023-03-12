@@ -86,7 +86,7 @@ void free_wp(int n){
     printf("Watchpoint No.%d:%s has been deleted!\n", p->NO, p->expr);
     return;
   }
-  else if(p->next->NO == n) {
+  else if(p->next != NULL && p->next->NO == n) {
     WP *d_p = p->next;
     p->next = d_p->next;
     d_p->next = free_->next;
