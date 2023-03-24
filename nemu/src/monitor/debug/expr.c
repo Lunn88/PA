@@ -316,7 +316,7 @@ uint32_t eval(int p, int q) {
 		else
 		  return val1 / val2;
 	  case '%':
-		if(val2 == 2)
+		if(val2 == 0)
 		  panic("Error: mode zero!\n");
 		else
 		  return val1 % val2;
