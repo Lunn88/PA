@@ -190,7 +190,6 @@ static inline void rtl_update_SF(const rtlreg_t* result, int width) {
   rtlreg_t is_sign = t0 != 0;
   rtl_set_SF(&is_sign);
 }
-}
 
 static inline void rtl_update_ZFSF(const rtlreg_t* result, int width) {
   rtl_update_ZF(result, width);
