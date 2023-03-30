@@ -22,3 +22,5 @@ make_EHelper(and);
 make_EHelper(sub);
 make_EHelper(xor);
 make_EHelper(cmp);
+
+make_EHelper(jmp);
