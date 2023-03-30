@@ -24,3 +24,5 @@ make_EHelper(xor);
 make_EHelper(cmp);
 
 make_EHelper(jmp);
+make_EHelper(jbe);
+make_EHelper(jcc);
