@@ -39,7 +39,7 @@ typedef struct {
       uint32_t    : 1;
       uint32_t OF : 1;
       uint32_t    : 20;
-    }
+    };
     rtlreg_t value;
   } eflags;
    
