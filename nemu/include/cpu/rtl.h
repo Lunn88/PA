@@ -158,8 +158,8 @@ static inline void rtl_push(const rtlreg_t* src1) {
   // esp <- esp - 4
   // M[esp] <- src1
   cpu.esp -= 4;
-  printf("777\n");
   rtl_sm(&cpu.esp, 4, *src1);
+  printf("777\n");
 }
 
 static inline void rtl_pop(rtlreg_t* dest) {
