@@ -10,7 +10,12 @@ make_EHelper(test) {
 }
 
 make_EHelper(and) {
-  TODO();
+  rtl_and(&t1, &id_dest->val, &id_src->val); //目的操作数与源操作数
+  operand_write(id_dest, &t1); //写入目的操作数
+  rtl_update_ZFSF(&t1, id_dest->width); //更新ZFSF位
+  t1 = 0;
+  rtl_set_OF(&t1); //设置OF位为0
+  rtl_set_CF(&t1); //设置CF位为0
 
   print_asm_template2(and);
 }
@@ -27,7 +32,12 @@ make_EHelper(xor) {
 }
 
 make_EHelper(or) {
-  TODO();
+  rtl_or(&t0, &id_dest->val, &id_src->val);
+  operand_write(id_dest, &t0);
+
+  rtl_update_ZFSF(&t0, id_dest->width);
+  rtl_set_CF(&tzero);
+  rtl_set_OF(&tzero);
 
   print_asm_template2(or);
 }
