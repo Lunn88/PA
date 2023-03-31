@@ -26,3 +26,10 @@ make_EHelper(cmp);
 make_EHelper(jmp);
 make_EHelper(jbe);
 make_EHelper(jcc);
+make_EHelper(test);
+make_EHelper(setcc);
+make_EHelper(movzx);
+make_EHelper(leave);
+make_EHelper(inc);
+make_EHelper(dec);
+
