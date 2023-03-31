@@ -37,4 +37,7 @@ make_EHelper(shl);
 make_EHelper(sar);
 make_EHelper(cltd);
 make_EHelper(cwtl);
-
+make_EHelper(not);
+make_EHelper(mul);
+make_EHelper(div);
+make_EHelper(idiv);
