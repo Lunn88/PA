@@ -51,18 +51,18 @@ make_group(gp2,
 
   /* 0xf6, 0xf7 */
 make_group(gp3,
-    EMPTY, EMPTY, EX(not), EX(neg),
+    IDEX(test_I, test), EMPTY, EX(not), EX(neg),
     EX(mul), EX(imul1), EX(div), EX(idiv))
 
   /* 0xfe */
 make_group(gp4,
-    EMPTY, EMPTY, EMPTY, EMPTY,
+    EMPTY, EX(dec), EMPTY, EMPTY,
     EMPTY, EMPTY, EMPTY, EMPTY)
 
   /* 0xff */
 make_group(gp5,
-    EX(inc), EX(dec), EX(call_rm), EMPTY,
-    EX(jmp_rm), EMPTY, EX(push), EMPTY)
+    EXW(inc, 2), EX(dec), EXW(call_rm, 2), EMPTY,
+    EXW(jmp_rm, 2), EMPTY, EX(push), EMPTY)
 
   /* 0x0f 0x01*/
 make_group(gp7,
