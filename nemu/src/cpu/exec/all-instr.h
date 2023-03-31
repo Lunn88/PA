@@ -32,4 +32,7 @@ make_EHelper(movzx);
 make_EHelper(leave);
 make_EHelper(inc);
 make_EHelper(dec);
+make_EHelper(shr);
+make_EHelper(shl);
+make_EHelper(sar);
 
