@@ -10,7 +10,7 @@ int main() {
 	nemu_assert(0 == 0);
 
 	sprintf(buf, "%d + %d = %d\n", 2, 10, 12);
-	nemu_assert(0 == 0);
+	nemu_assert(strcmp(buf, "2 + 10 = 12\n") == 0);
 
 	return 0;
 }
