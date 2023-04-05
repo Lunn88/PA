@@ -66,7 +66,6 @@ static uint8_t mbr[] = {
 void init_difftest(void) {
   int ppid_before_fork = getpid();
   int pid = fork();
-  printf("77777\n");
   if (pid == -1) {
     perror("fork");
     panic("fork error");
@@ -92,7 +91,7 @@ void init_difftest(void) {
   }
   else {
     // father
-
+    printf("77777\n");
     gdb_connect_qemu();
     Log("Connect to QEMU successfully");
 
