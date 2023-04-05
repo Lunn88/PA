@@ -159,6 +159,7 @@ void difftest_step(uint32_t eip) {
     || r.edi != cpu.edi
     || r.eip != cpu.eip)
   {
+    printf("77777\n");
     diff = true;
   }
 
