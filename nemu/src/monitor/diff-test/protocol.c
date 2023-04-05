@@ -112,7 +112,6 @@ struct gdb_conn* gdb_begin_inet(const char *addr, uint16_t port) {
 
   // open the socket and start the tcp connection
   int fd = socket(AF_INET, SOCK_STREAM, 0);
-  printf("77777\n");
   if (fd < 0)
     err(1, "socket");
   if (connect(fd, (const struct sockaddr *)&sa, sizeof(sa)) != 0) {
@@ -135,6 +134,7 @@ struct gdb_conn* gdb_begin_inet(const char *addr, uint16_t port) {
   }
 
   // initialize the rest of gdb on this handle
+  printf("77777\n");
   return gdb_begin(fd);
 }
 
