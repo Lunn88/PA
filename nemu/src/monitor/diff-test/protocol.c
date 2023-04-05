@@ -116,7 +116,6 @@ struct gdb_conn* gdb_begin_inet(const char *addr, uint16_t port) {
     err(1, "socket");
   if (connect(fd, (const struct sockaddr *)&sa, sizeof(sa)) != 0) {
     close(fd);
-    printf("77777\n");
     return NULL;
   }
 
