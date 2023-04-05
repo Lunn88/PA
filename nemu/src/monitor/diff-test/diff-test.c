@@ -162,7 +162,7 @@ if (r.eip != cpu.eip || r.eax != cpu.eax || r.ebx != cpu.ebx || r.ecx != cpu.ecx
     printf("r.esi:%#x, cpu.esi:%#x\\n", r.esi, cpu.esi);
     printf("r.edi:%#x, cpu.edi:%#x\\n", r.edi, cpu.edi);
 }
-  if (diff) {
+  if (true) {
     nemu_state = NEMU_END;
   }
 }
