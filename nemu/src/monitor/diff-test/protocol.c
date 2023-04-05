@@ -107,12 +107,12 @@ struct gdb_conn* gdb_begin_inet(const char *addr, uint16_t port) {
     .sin_family = AF_INET,
     .sin_port = htons(port),
   };
-  printf("77777\n");
   if (inet_aton(addr, &sa.sin_addr) == 0)
     errx(1, "Invalid address: %s", addr);
 
   // open the socket and start the tcp connection
   int fd = socket(AF_INET, SOCK_STREAM, 0);
+  printf("77777\n");
   if (fd < 0)
     err(1, "socket");
   if (connect(fd, (const struct sockaddr *)&sa, sizeof(sa)) != 0) {
