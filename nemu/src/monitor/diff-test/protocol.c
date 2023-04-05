@@ -114,11 +114,12 @@ struct gdb_conn* gdb_begin_inet(const char *addr, uint16_t port) {
   int fd = socket(AF_INET, SOCK_STREAM, 0);
   if (fd < 0)
     err(1, "socket");
+  printf("77777\n");
   if (connect(fd, (const struct sockaddr *)&sa, sizeof(sa)) != 0) {
     close(fd);
     return NULL;
   }
-printf("77777\n");
+
   socklen_t tmp;
   tmp = 1;
   int r = setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (char *)&tmp, sizeof(tmp));
