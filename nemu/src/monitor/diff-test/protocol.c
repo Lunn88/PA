@@ -107,6 +107,7 @@ struct gdb_conn* gdb_begin_inet(const char *addr, uint16_t port) {
     .sin_family = AF_INET,
     .sin_port = htons(port),
   };
+  printf("77777\n");
   if (inet_aton(addr, &sa.sin_addr) == 0)
     errx(1, "Invalid address: %s", addr);
 
