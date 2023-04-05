@@ -119,8 +119,8 @@ int init_monitor(int argc, char *argv[]) {
 
 #ifdef DIFF_TEST
   /* Fork a child process to perform differential testing. */
-  printf("77777\n");
   init_difftest();
+  printf("77777\n");
 #endif
 
   /* Load the image to memory. */
