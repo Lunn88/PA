@@ -9,4 +9,4 @@ int main(int argc, char *argv[]) {
   ui_mainloop(is_batch_mode);
 
   return 0;
-}
+} 
