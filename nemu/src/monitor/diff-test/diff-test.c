@@ -91,10 +91,9 @@ void init_difftest(void) {
   }
   else {
     // father
-    printf("77777\n");
     gdb_connect_qemu();
     Log("Connect to QEMU successfully");
-
+    printf("77777\n");
     atexit(gdb_exit);
 
     // put the MBR code to QEMU to enable protected mode
