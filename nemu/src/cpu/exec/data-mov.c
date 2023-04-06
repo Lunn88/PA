@@ -11,8 +11,10 @@ make_EHelper(push) {
 }
 
 make_EHelper(pop) {
-  rtl_pop(&id_dest->val);
-  operand_write(id_dest, &id_dest->val);
+  rtl_pop(&t0);
+  if (id_dest->type == OP_TYPE_REG) rtl_sr(id_dest->reg, id_dest->width, &t0);
+  else if (id_dest->type == OP_TYPE_MEM) rtl_sm(&id_dest->addr, id_dest->width, &t0);
+  else assert(0);
   print_asm_template1(pop);
 }
 
@@ -99,9 +101,8 @@ make_EHelper(popa) {
 }
 
 make_EHelper(leave) {
-  cpu.esp = cpu.ebp;
+  rtl_mv(&cpu.esp, &cpu.ebp);
   rtl_pop(&cpu.ebp);
-
   print_asm("leave");
 }
 
