@@ -10,12 +10,12 @@ make_EHelper(test) {
 }
 
 make_EHelper(and) {
-  rtl_and(&t1, &id_dest->val, &id_src->val); //目的操作数与源操作数
-  operand_write(id_dest, &t1); //写入目的操作数
-  rtl_update_ZFSF(&t1, id_dest->width); //更新ZFSF位
-  t1 = 0;
-  rtl_set_OF(&t1); //设置OF位为0
-  rtl_set_CF(&t1); //设置CF位为0
+  rtl_and(&t0, &id_dest->val, &id_src->val);
+  operand_write(id_dest, &t0);
+
+  rtl_update_ZFSF(&t0, id_dest->width);
+  rtl_set_OF(&tzero);
+  rtl_set_CF(&tzero);
 
   print_asm_template2(and);
 }
@@ -43,27 +43,28 @@ make_EHelper(or) {
 }
 
 make_EHelper(sar) {
-    rtl_sar(&t1, &id_dest->val, &id_src->val);
-    operand_write(id_dest, &t1);
-    rtl_update_ZFSF(&t1,id_dest->width);
-    // unnecessary to update CF and OF in NEMU
-    print_asm_template2(sar);
+  rtl_sar(&t0, &id_dest->val, &id_src->val);
+  operand_write(id_dest, &t0);
+  // unnecessary to update CF and OF in NEMU
+  rtl_update_ZFSF(&t0, id_dest->width);
+
+  print_asm_template2(sar);
 }
 
 make_EHelper(shl) {
-    rtl_shl(&t1, &id_dest->val, &id_src->val);
-    operand_write(id_dest, &t1);
-    rtl_update_ZFSF(&t1, id_dest->width);
-    // unnecessary to update CF and OF in NEMU
-    print_asm_template2(shl);
+  rtl_shl(&t0, &id_dest->val, &id_src->val);
+  operand_write(id_dest, &t0);
+  // unnecessary to update CF and OF in NEMU
+  rtl_update_ZFSF(&t0, id_dest->width);
+
+  print_asm_template2(shl);
 }
 
 make_EHelper(shr) {
-    rtl_shr(&t1, &id_dest->val, &id_src->val);
-    operand_write(id_dest, &t1);
-    rtl_update_ZFSF(&t1, id_dest->width);
-
+  rtl_shr(&t0, &id_dest->val, &id_src->val);
+  operand_write(id_dest, &t0);
   // unnecessary to update CF and OF in NEMU
+  rtl_update_ZFSF(&t0, id_dest->width);
 
   print_asm_template2(shr);
 }
@@ -77,21 +78,29 @@ make_EHelper(setcc) {
 }
 
 make_EHelper(not) {
-    rtl_mv(&t0, &id_dest->val);
-    rtl_not(&t0);
-    operand_write(id_dest, &t0);
-    print_asm_template1(not);
+  rtl_mv(&t0, &id_dest->val);
+  rtl_not(&t0);
+  operand_write(id_dest, &t0);
+
+  print_asm_template1(not);
 }
 
 make_EHelper(rol) {
-  for(t0 = 0;t0 < id_src->val; t0++)
-  {
-    rtl_msb(&t1,&id_dest->val,id_dest->width);
-    rtl_shli(&id_dest->val,&id_dest->val,1);
-    rtl_xor(&id_dest->val,&id_dest->val,&t1);
+  rtl_shl(&t0, &id_dest->val, &id_src->val);
+  if (decoding.is_operand_size_16) {
+    rtl_addi(&t1, &tzero, 16);
+    rtl_sub(&t1, &t1, &id_src->val);
+    rtl_shr(&t2, &id_dest->val, &t1);
+  } else {
+    rtl_addi(&t1, &tzero, 32);
+    rtl_sub(&t1, &t1, &id_src->val);
+    rtl_shr(&t2, &id_dest->val, &t1);
   }
-  rtl_set_CF(&t1);
-  operand_write(id_dest,&id_dest->val);
+  rtl_or(&t0, &t0, &t2);
+  operand_write(id_dest, &t0);
 
-  print_asm_template2(rol);
+  // unnecessary to update CF and OF in NEMU
+  rtl_update_ZFSF(&t0, id_dest->width);
+
+  print_asm_template2(shl);
 }
