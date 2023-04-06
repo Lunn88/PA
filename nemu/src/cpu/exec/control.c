@@ -32,16 +32,9 @@ make_EHelper(call) {
 }
 
 make_EHelper(ret) {
-  rtl_pop(&t0);
-  rtl_j(t0);
-
-  print_asm("ret");
-}
-
-make_EHelper(reti) {
-  rtl_pop(&decoding.jmp_eip);
   decoding.is_jmp = 1;
-  cpu.esp += id_dest->val;
+  rtl_pop(&id_dest->val);
+  decoding.jmp_eip = id_dest->val;
   print_asm("ret");
 }
 
