@@ -84,7 +84,7 @@ make_EHelper(not) {
 }
 
 make_EHelper(rol) {
-  for(t0 = 0;t0 < id_src->val; t0++)
+  for(t0 = 0; t0 < id_src->val; t0++)
   {
     rtl_msb(&t1,&id_dest->val,id_dest->width);
     rtl_shli(&id_dest->val,&id_dest->val,1);
