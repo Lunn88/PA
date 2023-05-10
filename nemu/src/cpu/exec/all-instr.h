@@ -1,7 +1,6 @@
 #include "cpu/exec.h"
 
 
-
 make_EHelper(operand_size);
 
 make_EHelper(inv);
@@ -68,5 +67,6 @@ make_EHelper(_uptime);
 make_EHelper(rol);
 
 make_EHelper(lidt);
+make_EHelper(int);
 
 
