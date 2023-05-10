@@ -37,36 +37,58 @@ static int cmd_q(char *args) {
 }
 
 static int cmd_si(char *args) {
-  if(args == NULL){
-	  cpu_exec(1);
+  char *arg = strtok(NULL," ");
+  int steps = 0;
+  if(arg==NULL){
+    cpu_exec(1);  //one step
+    return 0;
   }
-  else{
-	  cpu_exec(atoi(args));
+  sscanf(arg,"%d",&steps);
+  if(steps<-1){
+    printf("Error Integer!\n");
+    return 0;
+  }
+  cpu_exec(steps);
+  return 0;
+}
+
+static int cmd_info(char *args){
+  char *arg=strtok(NULL," ");
+  if(strcmp(arg,"r") == 0){
+  //info r
+    for(int i=0;i<8;i++)
+      printf("%s \t0x%x \t%d\n",regsl[i],cpu.gpr[i]._32,cpu.gpr[i]._32);
+      printf("eip \t0x%x \t%d\n",cpu.eip,cpu.eip);
+  }
+  else if(strcmp(arg,"w") == 0){
+  //info w
+    print_wp();
   }
   return 0;
 }
 
-static int cmd_info(char *args) {
-  if(args == NULL) {
-    printf("Error: missing arguments!\n");
+static int cmd_x(char *args){
+  char *N = strtok(NULL," ");
+  char *EXPR = strtok(NULL," ");
+  int len;
+
+  len=atoi(N);
+
+  bool flag = true;
+  vaddr_t address = expr(EXPR, &flag);
+  if (!flag){
+    printf("Error: wrong expr!\n");
     return 0;
   }
-    
-  switch(*args) {
-	  case 'r':
-		  printf("EAX : %x\n", cpu.eax);
-		  printf("EBX : %x\n", cpu.ebx);
-		  printf("ECX : %x\n", cpu.ecx);
-		  printf("EDX : %x\n", cpu.edx);
-		  printf("ESP : %x\n", cpu.esp);
-		  printf("EBP : %x\n", cpu.ebp);
-		  printf("ESI : %x\n", cpu.esi); 
-		  printf("EDI : %x\n", cpu.edi);
-		  break;
-	  case 'w':
-		  print_wp();
-		  break;
-	  default: printf("Error: wrong input!\n");
+
+  for(int i=0;i<len;i++){
+    uint32_t data = vaddr_read(address+i*4,4);
+    printf("0x%08x\t",address+i*4);
+    for(int j=0;j<4;j++){
+      printf("0x%02x\t",data&0xff);
+      data=data>>8;
+    }
+    printf("\n");
   }
   return 0;
 }
@@ -80,43 +102,9 @@ static int cmd_p(char *args){
 	uint32_t result = expr(args, &success);
 	if(success)
 	  printf("Expresssion: %s = %d\n", args, result);
-	else 
+	else
 	  printf("Error: wrong expression!\n");
     return 0;
-}
-
-static int cmd_x(char* args) {
-  char *arg = strtok(args, " ");
-  
-  if(arg == NULL){
-    printf("Error: missing argument n!\n");
-    return 0;
-  }
-  
-  int n = atoi(arg);
-  char *EXPR = strtok(NULL, " ");
-  if(EXPR == NULL){
-    printf("Error: missing argument addr!\n");
-    return 0;
-  }
-  
-  bool success = true;
-  vaddr_t addr = expr(EXPR, &success);
-  if (success == false){
-    printf("Error: wrong expr!\n");
-    return 0;
-  }
-  
-  for(int i = 0; i < n; i++){
-    uint32_t data = vaddr_read(addr + i * 4, 4);
-    printf("0x%08x\t", addr + i * 4);
-    for(int j = 0; j < 4; j++){
-      printf("0x%02x\t" , data & 0xff);
-      data = data >> 8;
-    }
-    printf("\n");
-  }
-return 0;
 }
 
 static int cmd_w(char *args){
@@ -148,13 +136,14 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Execute n instructions and then stop", cmd_si },
-  { "info", "Print program state", cmd_info },
-  { "p" , "Evaluate the result of the expression" , cmd_p },
-  { "x" , "Print len memory start from addr", cmd_x },
+  {"si", "Single ", cmd_si},
+  {"info","INFO",cmd_info},
+  {"x","Scan memory",cmd_x},
+  {"p","Expr Cal",cmd_p},
   { "w" , "Set watchpoint", cmd_w},
   { "d" , "Delete watchpoint", cmd_d}
   /* TODO: Add more commands */
+
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))

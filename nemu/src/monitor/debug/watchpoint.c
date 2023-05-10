@@ -23,30 +23,29 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
-void new_wp(char *exp){
+
+WP* new_wp(char *exp){
   if(init_flag == false){
     init_wp_pool();
     init_flag = true;
     Log("Watchpoint pool initialized!\n");
   }
-  
+
   if(free_ == NULL){
-    printf("Error: watchpoint pool empty, no available watchpoint!\n");
-    return;
+    panic("Error: watchpoint pool empty, no available watchpoint!\n");
   }
-  
+
   WP *wp = free_;
   strcpy(wp->expr, exp);
   bool success = true;
   wp->value = expr(wp->expr, &success);
   if(success == false){
-    printf("Error: wrong expression!\n");
-    return;
+    panic("Error: wrong expression!\n");
   }
-  
+
   free_ = free_->next;
   wp->next = NULL;
-  
+
   if(head == NULL)
     head = wp;
   else{
@@ -58,13 +57,13 @@ void new_wp(char *exp){
   printf("Watchpoint No.%d:%s has been set!\n", wp->NO, wp->expr);
   return wp;
 }
-   
+
 void free_wp(int n){
   if(head == NULL) {
     printf("Error: watchpoint pool is empty!\n");
     return;
   }
-  
+
   if(head->NO == n) {
     printf("Watchpoint No.%d:%s has been deleted!\n", head->NO, head->expr);
     if(head->next == NULL) {
@@ -80,7 +79,7 @@ void free_wp(int n){
     }
     return;
   }
-  
+
   WP *p = head;
   while(p->next != NULL && p->next->NO != n) {
     p = p->next;
@@ -99,7 +98,7 @@ void free_wp(int n){
     return;
   }
 }
-  
+
 bool check_wp(){
   bool changed = false;
   if(head != NULL){
@@ -109,7 +108,7 @@ bool check_wp(){
       uint32_t new_value = expr(p->expr, &success);
       if(success == false)
         panic("Error: wrong token!\n");
-      
+
       if(new_value != p->value){
         printf("Watchpoint No.%d:%s's value has changed from %d to %d\n", p->NO, p->expr, p->value, new_value);
         p->value = new_value;
@@ -119,8 +118,8 @@ bool check_wp(){
     }
   }
   return changed;
-} 
-  
+}
+
 void print_wp(){
   WP *p = head;
   if(p == NULL){
@@ -134,6 +133,3 @@ void print_wp(){
   }
   return;
 }
-
-
-
