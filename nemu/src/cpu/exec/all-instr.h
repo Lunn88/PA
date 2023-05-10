@@ -67,4 +67,6 @@ make_EHelper(_uptime);
 
 make_EHelper(rol);
 
+make_EHelper(lidt);
+
 
