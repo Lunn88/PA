@@ -10,6 +10,7 @@ _RegSet* irq_handle(_RegSet *tf) {
   _RegSet *next = tf;
   if (H) {
     _Event ev;
+    //printf("%d\n", tf->irq);
     switch (tf->irq) {
       case 0x80: ev.event = _EVENT_SYSCALL; break;
       default: ev.event = _EVENT_ERROR; break;
