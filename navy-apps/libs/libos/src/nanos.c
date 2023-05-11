@@ -33,7 +33,7 @@ extern char end;
 void *_sbrk(intptr_t increment){
     static void *program_break = (void *)&end;
 
-    if(_syscall_(SYS_brk, program_break + increment, 0, 0) == 0){
+    if(_syscall_(SYS_brk, (uintptr_t)program_break + increment, 0, 0) == 0){
         void *old_program_break = program_break;
         program_break += increment;
         return old_program_break;
