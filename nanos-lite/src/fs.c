@@ -51,7 +51,8 @@ ssize_t fs_read(int fd, void *buf, size_t len){
     ssize_t write_len = delta_len < len?delta_len:len;
 
     switch(fd){
-        case FD_STDOUT: case FD_STDERR:
+        case FD_STDOUT:
+	case FD_STDERR:
             return -1;
         case FD_DISPINFO:
             dispinfo_read(buf, fp->open_offset, len);
@@ -79,7 +80,8 @@ ssize_t fs_write(int fd, uint8_t *buf, size_t len){
 
     size_t i = 0;
     switch(fd){
-        case FD_STDOUT: case FD_STDERR:
+        case FD_STDOUT:
+	case FD_STDERR:
             while(i++ < len) _putc(*buf++);
             return len;
         
@@ -100,7 +102,7 @@ ssize_t fs_write(int fd, uint8_t *buf, size_t len){
 off_t fs_lseek(int fd, off_t offset, int whence){
     Finfo *fp = &file_table[fd];
 
-    if(fd >= NR_FILES) return 0;
+    assert(fd < NR_FILES);
 
     switch(whence){
         case SEEK_SET:
@@ -114,8 +116,8 @@ off_t fs_lseek(int fd, off_t offset, int whence){
         default: return -1;
     }
     if(offset < 0 || offset > fp->size) return -1;
-    fp->open_offset = offset;
-    return fp->open_offset;
+    
+    return fp->open_offset = offset;
 }
 
 int fs_close(int fd){
