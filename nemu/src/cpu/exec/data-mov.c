@@ -36,7 +36,6 @@ make_EHelper(pusha) {
         rtl_lr_w(&t1, R_BP); rtl_push(&t1);
         rtl_lr_w(&t1, R_SI); rtl_push(&t1);
         rtl_lr_w(&t1, R_DI); rtl_push(&t1);
-        
     }
     else {
         rtl_lr_l(&t1, R_EAX); rtl_push(&t1);
