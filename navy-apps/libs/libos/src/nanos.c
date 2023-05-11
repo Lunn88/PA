@@ -29,16 +29,16 @@ int _write(int fd, void *buf, size_t count){
     return _syscall_(SYS_write, fd, (uintptr_t)buf, count);
 }
 
-extern char end;
-void *_sbrk(intptr_t increment){
-    static void *program_break = (void *)&end;
+extern char _end;
+intptr_t program_break = (intptr_t)&_end;
 
-    if(_syscall_(SYS_brk, 0, 0, 0) == 0){
-        void *old_program_break = program_break;
-        program_break += increment;
-        return old_program_break;
-    }
-    return (void *)-1;
+void *_sbrk(intptr_t increment){
+  intptr_t old_program_break = program_break;
+  if(_syscall_(SYS_brk, program_break + increment, 0, 0) == 0) {
+    program_break = program_break + increment;
+    return (void *)old_program_break;
+  }
+  else return (void*)-1;
 }
 
 int _read(int fd, void *buf, size_t count) {
