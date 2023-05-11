@@ -65,6 +65,7 @@ ssize_t fs_read(int fd, void *buf, size_t len){
     }
 
     fp->open_offset += write_len;
+    // fs_lseek()
     return write_len;
 }
 
@@ -79,6 +80,8 @@ ssize_t fs_write(int fd, uint8_t *buf, size_t len){
 
     size_t i = 0;
     switch(fd){
+        //case FD_STDIN: return -1;
+        
         case FD_STDOUT: case FD_STDERR:
             while(i++ < len) _putc(*buf++);
             return len;
@@ -98,6 +101,7 @@ ssize_t fs_write(int fd, uint8_t *buf, size_t len){
 }
 
 off_t fs_lseek(int fd, off_t offset, int whence){
+    
     Finfo *fp = &file_table[fd];
 
     if(fd >= NR_FILES) return 0;
