@@ -71,6 +71,7 @@ ssize_t fs_read(int fd, void *buf, size_t len){
 
 void fb_write(const void *buf, off_t offset, size_t len);
 void ramdisk_write(const void *buf, off_t offset, size_t len);
+
 ssize_t fs_write(int fd, uint8_t *buf, size_t len){
     
     Finfo *fp = &file_table[fd];
