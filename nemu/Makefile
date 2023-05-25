@@ -29,7 +29,7 @@ $(OBJ_DIR)/%.o: src/%.c
 
 # Some convinient rules
 
-.PHONY: app run submit clean count
+.PHONY: app run submit clean
 app: $(BINARY)
 
 ARGS ?= -l $(BUILD_DIR)/nemu-log.txt
@@ -52,6 +52,3 @@ gdb: $(BINARY)
 
 clean: 
 	rm -rf $(BUILD_DIR)
-
-count:
-	find . -name "*.[ch]" | xargs cat | wc -l
