@@ -38,7 +38,7 @@ paddr_t page_translate(vaddr_t vaddr, bool flag) {
     //读取页目录项
     page_dir_item.val = paddr_read(page_dir_item_addr, 4);
     //验证present位
-    Log("1111");
+    //Log("1111");
     assert(page_dir_item.present);
     //根据讲义，accessed为1，若为1表示该页被CPU访问过，由CPU置1，由操作系统清0
     page_dir_item.accessed = 1;
@@ -49,7 +49,7 @@ paddr_t page_translate(vaddr_t vaddr, bool flag) {
     //读取页表项
     page_table_item.val = paddr_read(page_table_item_addr, 4);
     //验证present位
-    Log("222");
+    //Log("222");
     assert(page_table_item.present);
     page_table_item.accessed = 1;
     //如果是写操作，脏位设为1，当CPU对一个页执行写操作时，设置对应页表项的D位为1，此项仅针对页表项有效，并不会修改页目录表项的D位
@@ -57,7 +57,7 @@ paddr_t page_translate(vaddr_t vaddr, bool flag) {
     //写回到页表项所在地址
     paddr_write(page_table_item_addr, 4, page_table_item.val);
     paddr_t paddr = (page_table_item.page_frame << 12) + (vaddr & 0xfff);
-    //Log("vaddr: %#10x, paddr: %#10x", vaddr, paddr);
+    Log("vaddr: %#10x, paddr: %#10x", vaddr, paddr);
     return paddr;
 }
 
