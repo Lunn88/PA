@@ -14,7 +14,7 @@ uintptr_t loader(_Protect *as, const char *filename) {
   void *va, *pa;
   for(va = DEFAULT_ENTRY; va < fz_end; va += PGSIZE){
     pa = new_page();
-    Log("Map va to pa: 0x%08x to 0x%08x", va, pa);
+    //Log("Map va to pa: 0x%08x to 0x%08x", va, pa);
     _map(as, va, pa);
     fs_read(fd, pa, (fz_end - va) < PGSIZE ? (fz_end - va) : PGSIZE);
   }
