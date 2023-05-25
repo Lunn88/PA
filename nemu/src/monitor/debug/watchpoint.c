@@ -1,13 +1,10 @@
 #include "monitor/watchpoint.h"
 #include "monitor/expr.h"
 #include "nemu.h"
-
 #define NR_WP 32
 
 static WP wp_pool[NR_WP];
 static WP *head, *free_;
-
-static bool init_flag = false;
 
 void init_wp_pool() {
   int i;
@@ -23,113 +20,187 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
+WP* new_wp(){
+	if (free_ == NULL) assert(0);
+	if (head == NULL)
+		head = free_;
+	WP* tmp = free_;
+	free_ = free_->next;
+	tmp->next = NULL;
+// 	printf("new_wp free_->NO:%d\n", free_->NO);
+	if (head->NO > tmp->NO){
+		tmp->next = head;
+		head = tmp;
+		return tmp;
+	}
 
-WP* new_wp(char *exp){
-  if(init_flag == false){
-    init_wp_pool();
-    init_flag = true;
-    Log("Watchpoint pool initialized!\n");
-  }
+	WP *temp = head, *last = temp;
+// 	while (temp) last = temp, temp = temp->next;
+// 	last->next = tmp;
 
-  if(free_ == NULL){
-    panic("Error: watchpoint pool empty, no available watchpoint!\n");
-  }
+	while (temp){
+		last = temp;
+		temp = temp->next;
+		if (temp && temp->NO > tmp->NO){
+			last->next = tmp;
+			tmp->next = temp;
+			break;
+		}
+		else if(!temp){
+			last->next = tmp;
+			tmp->next = NULL;
+			break;
+		}
+	} 
+	return tmp;
+}
+void free_wp(WP *wp){
+	if (free_ == NULL) {
+		free_ = wp;
+		wp->next = NULL;
+	}
+	if (wp->NO < free_->NO){
+		if (head == wp) head = head->next;
+		else {
+			WP *t = head, *pre = t;
+			while (t){
+				if (t->NO == wp->NO){
+					pre->next = wp->next;
+					break;
+				}
+				pre = t;
+				t = t->next;
+			}
+		}
+		wp->next = free_;
+		free_ = wp;
+		if (head && !head->next && head == free_) head = NULL;
+		return;
+	}
 
-  WP *wp = free_;
-  strcpy(wp->expr, exp);
-  bool success = true;
-  wp->value = expr(wp->expr, &success);
-  if(success == false){
-    panic("Error: wrong expression!\n");
-  }
+	//这里是为了把想要释放的节点的上一个节点的next指针指向待释放节点的下一个节点
+	WP *temp = head, *last = temp;
+	while (temp) {
+		if (temp->NO == wp->NO){
+			last->next = wp->next;
+			break;
+		}
+		last = temp;
+		temp = temp->next;
+	}
+	
 
-  free_ = free_->next;
-  wp->next = NULL;
+	//以下代码功能如图所示：
+	//    head                      +-------------------------->...               head
+	//     +                        |                                              +
+	//     |            +-------------------------+                                |
+	//     |            |           |             |                                |
+	//     |            |           |             |                                |
+	//+----v---+   +----+---+   +---+----+   +----v---+                       +----v---+   +--------+   +--------+   +--------+
+	//|        |   |        |   |        |   |        +-------->...    --->   |        |   |        +--->        +--->        +-------->...
+	//+----+---+   +----+---+   +---^----+   +--------+                       +----+---+   +----+---+   +--------+   +--------+
+	//     |            ^           |                                              |            ^
+	//     |            |           |                                              |            |
+	//     |            +           |                                              |            +
+	//     |           free_        |                                              |           free_
+	//     |                        |                                              |
+	//     |                        |                                              |
+	//     +------------------------+                                              +------------------------->...
 
-  if(head == NULL)
-    head = wp;
-  else{
-    WP *p = head;
-    while(p->next != NULL)
-      p = p->next;
-    p->next = wp;
-  }
-  printf("Watchpoint No.%d:%s has been set!\n", wp->NO, wp->expr);
-  return wp;
+	temp = free_, last = temp;
+	while (temp->next){
+		last = temp;
+		temp = temp->next;
+		if (temp->NO > wp->NO){
+			if (head == wp) head = head->next;
+			last->next = wp;
+			wp->next = temp;
+			break;
+		}
+		else if (!temp->next){
+			temp->next = wp;
+			wp->next = NULL;
+			break;
+		}
+	}
+	return;
+}
+//给予一个表达式e，构造以该表达式为监视目标的监视点，并返回编号
+int set_watchpoint(char *e){
+	WP* new = new_wp();
+// 	printf("set_watchpoint new->NO:%d\n", new->NO);
+// 	printf("set_watchpoint free_->NO:%d\n", free_->NO);
+	strcpy(new->expr, e);
+    printf("Set watchpoint #%d\n", new->NO);
+    printf("expr      = %s\n", e);
+	bool success = true;
+    uint32_t result = expr(e, &success);
+    if (success == true && result != -1162167624){
+        printf("old value = 0x%08x\n", result);
+        new->old_val = result;
+    }
+	return new->NO;
+}
+//给予一个监视点编号，从已使用的监视点中归还该监视点到池中
+bool delete_watchpoint(int NO){
+	if (!head) return false;
+	WP* tmp = head;
+	int flag = 0;
+	while (tmp) {
+		if (tmp->NO == NO) flag = 1;;
+		tmp = tmp->next;
+	}
+	if (!flag) return false;
+	tmp = head;
+	while (tmp){
+// 		printf("delete_watchpoint:%d free_->NO:%d head->NO:%d\n", tmp->NO, free_->NO, head->NO);
+		if (tmp->NO == NO){
+			free_wp(tmp);
+			printf("Watchpoint %d deleted\n", tmp->NO);
+// 			WP* temp = head;
+// 			while(temp) printf("%d ", temp->NO), temp = temp->next;
+// 			puts("");
+			return true;
+		}
+		tmp = tmp->next;
+	}
+	puts("");
+	return false;
+} 
+
+//显示当前在使用状态中的监视点列表
+void list_watchpoint(void){
+	if (!head) return;
+	puts("NO Expr      Old Value");
+	WP* tmp = head;
+	while (tmp){
+		bool success = true;
+		uint32_t result = expr(tmp->expr, &success);
+		if (success == true && result != -1162167624) printf("%2d %-10s0x%08x\n", tmp->NO, tmp->expr, tmp->old_val);
+		else break;
+		tmp = tmp->next;
+	}
+	return;
+}
+//扫描所有使用中的监视点，返回触发的监视点指针，若无触发返回NULL
+WP* scan_watchpoint(uint32_t eip){
+	WP *cur = head;
+	while (cur){
+		bool success = true;
+		uint32_t result = expr(cur->expr, &success);
+// 		printf("result:0x%x\n", result);
+		if (success == true && result != -1162167624) cur->new_val = result;
+		else return NULL;
+		if (cur->old_val != cur->new_val){
+			printf("Hit watchpoint %d at address 0x%08x\n", cur->NO, eip);
+			printf("expr      = %s\n", cur->expr);
+			printf("old value = 0x%08x\nnew value = 0x%08x\n", cur->old_val, cur->new_val);
+			puts("program paused");
+			cur->old_val = cur->new_val;
+			return cur;
+		}
+		cur = cur->next;
+	}
+	return NULL;
 }
 
-void free_wp(int n){
-  if(head == NULL) {
-    printf("Error: watchpoint pool is empty!\n");
-    return;
-  }
-
-  if(head->NO == n) {
-    printf("Watchpoint No.%d:%s has been deleted!\n", head->NO, head->expr);
-    if(head->next == NULL) {
-      head->next = free_;
-      free_ = head;
-      head = NULL;
-    }
-    else {
-      WP *tmp = head->next;
-      head->next = free_;
-      free_ = head;
-      head = tmp;
-    }
-    return;
-  }
-
-  WP *p = head;
-  while(p->next != NULL && p->next->NO != n) {
-    p = p->next;
-  }
-  // p->next is the n is the n.
-  if(p->next != NULL && p->next->NO == n) {
-    WP *d_p = p->next;
-    p->next = d_p->next;
-    d_p->next = free_;
-    free_ = d_p;
-    printf("Watchpoint No.%d:%s has been deleted!\n", d_p->NO, d_p->expr);
-    return;
-  }
-  else {
-    printf("Error: no such watchpoint!\n");
-    return;
-  }
-}
-
-bool check_wp(){
-  bool changed = false;
-  if(head != NULL){
-    WP *p = head;
-    while(p != NULL){
-      bool success = true;
-      uint32_t new_value = expr(p->expr, &success);
-      if(success == false)
-        panic("Error: wrong token!\n");
-
-      if(new_value != p->value){
-        printf("Watchpoint No.%d:%s's value has changed from %d to %d\n", p->NO, p->expr, p->value, new_value);
-        p->value = new_value;
-        changed = true;
-      }
-      p = p->next;
-    }
-  }
-  return changed;
-}
-
-void print_wp(){
-  WP *p = head;
-  if(p == NULL){
-    printf("No watchpoint!\n");
-  }
-  else{
-    while(p != NULL){
-      printf("No.%d\t%s\t%08x\n", p->NO, p->expr, p->value);
-      p = p->next;
-    }
-  }
-  return;
-}
