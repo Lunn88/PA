@@ -36,97 +36,125 @@ static int cmd_q(char *args) {
   return -1;
 }
 
-static int cmd_si(char *args) {
-  char *arg = strtok(NULL," ");
-  int steps = 0;
-  if(arg==NULL){
-    cpu_exec(1);  //one step
-    return 0;
-  }
-  sscanf(arg,"%d",&steps);
-  if(steps<-1){
-    printf("Error Integer!\n");
-    return 0;
-  }
-  cpu_exec(steps);
-  return 0;
-}
-
-static int cmd_info(char *args){
-  char *arg=strtok(NULL," ");
-  if(strcmp(arg,"r") == 0){
-  //info r
-    for(int i=0;i<8;i++)
-      printf("%s \t0x%x \t%d\n",regsl[i],cpu.gpr[i]._32,cpu.gpr[i]._32);
-      printf("eip \t0x%x \t%d\n",cpu.eip,cpu.eip);
-  }
-  else if(strcmp(arg,"w") == 0){
-  //info w
-    print_wp();
-  }
-  return 0;
-}
-
-static int cmd_x(char *args){
-  char *N = strtok(NULL," ");
-  char *EXPR = strtok(NULL," ");
-  int len;
-
-  len=atoi(N);
-
-  bool flag = true;
-  vaddr_t address = expr(EXPR, &flag);
-  if (!flag){
-    printf("Error: wrong expr!\n");
-    return 0;
-  }
-
-  for(int i=0;i<len;i++){
-    uint32_t data = vaddr_read(address+i*4,4);
-    printf("0x%08x\t",address+i*4);
-    for(int j=0;j<4;j++){
-      printf("0x%02x\t",data&0xff);
-      data=data>>8;
-    }
-    printf("\n");
-  }
-  return 0;
-}
-
-static int cmd_p(char *args){
-	bool success = true;
-	if(args == NULL){
-		printf("Error: missing arguments!\n");
-	    return 0;
-	}
-	uint32_t result = expr(args, &success);
-	if(success)
-	  printf("Expresssion: %s = %d\n", args, result);
-	else
-	  printf("Error: wrong expression!\n");
-    return 0;
-}
-
-static int cmd_w(char *args){
-  if(args == NULL){
-    printf("Error: missing arguments!\n");
-    return 0;
-  }
-  new_wp(args);
-  return 0;
-}
-
-static int cmd_d(char *args){
-  if(args == NULL){
-    printf("Error: missing arguments!\n");
-    return 0;
-  }
-  int n = atoi(args);
-  free_wp(n);
-  return 0;
-}
-
 static int cmd_help(char *args);
+
+void exec_wrapper(bool);
+
+static int cmd_si(char *args) {
+	char *arg = strtok(NULL, " ");
+	int N = 0;
+	if (!arg)
+		N = 1;				//if arg is NULL, execute 1 instruction
+	else if ((N = atoi(arg)) <= 0) {
+		print_error("Argument Error: Argument should be a positive integer!");
+		return 0;
+	}
+
+	cpu_exec(N);
+	return 0;
+}
+
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL, " ");
+	if (!arg) {
+		print_error("Argument Error: There should be an argument!");
+		return 0;
+	}
+	
+	int i;	
+	switch (arg[0]) {
+		case 'r':
+			for (i = R_EAX; i <= R_EDI; i++)
+				printf("%s\t0x%08x\t%10d\n", regsl[i], reg_l(i), reg_l(i));
+			printf("%s\t0x%08x\t%10d\n", "eip", cpu.eip, cpu.eip);
+			printf("[OF IF SF ZF CF] = [%d %d %d %d %d]\n", 
+			       cpu.OF, cpu.IF, cpu.SF, cpu.ZF, cpu.CF);
+			break;
+		case 'w':
+			print_all_wp();
+			break;
+		default:
+			print_error("Argument Error: Argument should be r or w!");
+	}
+	return 0;
+}
+
+static int cmd_p(char *args) {
+	char *expression = args; 
+	if (!expression) {
+		print_error("Argument Error: There should be an argument!");
+		return 0;
+	}
+	
+	bool success;
+	uint32_t val = expr(expression, &success);
+	if (success)
+		printf("%s = %dU = %d = 0x%x\n", expression, val, (int)val, val);	
+	return 0;	
+}
+
+static int cmd_x(char *args) {
+	if (!args) {
+		print_error("Argument Error: There should be at least two arguments!");
+		return 0;
+	}
+
+	char *args_end = args + strlen(args),
+			 *first_arg = strtok(NULL, " ");
+	if (!first_arg){
+		print_error("Argument Error: There should be at least two arguments!");
+		return 0;
+	}
+
+	int N = atoi(first_arg);
+	char *expression = first_arg + strlen(first_arg) + 1;
+	if (expression >= args_end) {
+		print_error("Argument Error: There should be at least two arguments!");
+		return 0;
+	}				
+
+	bool success;
+	vaddr_t addr = expr(expression, &success);
+	if (!success)
+		return 0;
+
+	int i, j;
+	for (i = 0; i < N; ++i) {
+		printf("  0x%x:    ", addr);
+		uint32_t value = vaddr_read(addr, 4);
+		uint8_t *pbyte = (uint8_t *)&value;
+		for (j = 0; j < 4; ++j)
+			printf("%02x ", pbyte[j]);
+		putchar('\n');
+		addr += 4;
+	}
+	return 0;
+}
+
+static int cmd_w(char *args) {
+	char *expr = args; 
+	if (!expr) {
+		print_error("Argument Error: There should be an expression!");
+		return 0;
+	}
+
+	if (!insert_wp(expr))
+		print_error("Error: Fail to insert watchpoint!");
+	return 0;	
+}
+
+static int cmd_d(char *args) {
+	char *arg = strtok(NULL, " ");
+	if (!arg) {
+		print_error("Argument Error: There should be an argument!");
+		return 0;
+	}
+
+	int N = atoi(arg);
+	if (!delete_wp(N)) 
+		print_error("Error: Fail to delete watchpoint!");
+	return 0;	
+}
 
 static struct {
   char *name;
@@ -136,14 +164,12 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  {"si", "Single ", cmd_si},
-  {"info","INFO",cmd_info},
-  {"x","Scan memory",cmd_x},
-  {"p","Expr Cal",cmd_p},
-  { "w" , "Set watchpoint", cmd_w},
-  { "d" , "Delete watchpoint", cmd_d}
-  /* TODO: Add more commands */
-
+	{ "si", "Execute N instructions by step where N is 1 by default", cmd_si },
+	{ "info", "Print some infomation about regs or watchpoiters", cmd_info },
+	{ "p", "Print the value of an expreesion", cmd_p },
+	{ "x", "Examine the memory", cmd_x },
+	{ "w", "Set a watchpoint", cmd_w },
+	{ "d", "Delete a watchpoint", cmd_d }
 };
 
 #define NR_CMD (sizeof(cmd_table) / sizeof(cmd_table[0]))

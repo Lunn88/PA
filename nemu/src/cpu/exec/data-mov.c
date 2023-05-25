@@ -5,96 +5,64 @@ make_EHelper(mov) {
   print_asm_template2(mov);
 }
 
+// 32bit only
 make_EHelper(push) {
-  //TODO();
-  rtl_push(&(id_dest->val));
+  rtl_push(&id_dest->val);
+
   print_asm_template1(push);
 }
 
+// 32bit only
 make_EHelper(pop) {
-  //TODO();
   rtl_pop(&t0);
-
-  if (id_dest->type == OP_TYPE_REG) 
-    rtl_sr(id_dest->reg, id_dest->width, &t0);
-  else if (id_dest->type == OP_TYPE_MEM) 
-    rtl_sm(&id_dest->addr, id_dest->width, &t0);
-  else assert(0);
+  operand_write(id_dest, &t0);
 
   print_asm_template1(pop);
 }
 
+// 32bit only
 make_EHelper(pusha) {
-    // TODO();
-    t0 = cpu.esp;
-    if(decoding.is_operand_size_16) {
-        rtl_lr_w(&t1, R_AX); rtl_push(&t1);
-        rtl_lr_w(&t1, R_CX); rtl_push(&t1);
-        rtl_lr_w(&t1, R_DX); rtl_push(&t1);
-        rtl_lr_w(&t1, R_BX); rtl_push(&t1);
-        rtl_push(&t0);
-        rtl_lr_w(&t1, R_BP); rtl_push(&t1);
-        rtl_lr_w(&t1, R_SI); rtl_push(&t1);
-        rtl_lr_w(&t1, R_DI); rtl_push(&t1);
-    }
-    else {
-        rtl_lr_l(&t1, R_EAX); rtl_push(&t1);
-        rtl_lr_l(&t1, R_ECX); rtl_push(&t1);
-        rtl_lr_l(&t1, R_EDX); rtl_push(&t1);
-        rtl_lr_l(&t1, R_EBX); rtl_push(&t1);
-        rtl_push(&t0);
-        rtl_lr_l(&t1, R_EBP); rtl_push(&t1);
-        rtl_lr_l(&t1, R_ESI); rtl_push(&t1);
-        rtl_lr_l(&t1, R_EDI); rtl_push(&t1);
-    }
-    print_asm("pusha");
+  rtl_lr_l(&t0, R_ESP);
+  rtl_push(&reg_l(R_EAX));
+  rtl_push(&reg_l(R_ECX));
+  rtl_push(&reg_l(R_EDX));
+  rtl_push(&reg_l(R_EBX));
+  rtl_push(&t0);
+  rtl_push(&reg_l(R_EBP));
+  rtl_push(&reg_l(R_ESI));
+  rtl_push(&reg_l(R_EDI));
+  
+  print_asm("pusha");
 }
 
+// 32bit only
 make_EHelper(popa) {
-    // TODO();
-    if(decoding.is_operand_size_16) {
-        rtl_pop(&t1); rtl_sr_w(R_DI, &t1);
-        rtl_pop(&t1); rtl_sr_w(R_SI, &t1);
-        rtl_pop(&t1); rtl_sr_w(R_BP, &t1);
-        rtl_pop(&t1);
-        rtl_pop(&t1); rtl_sr_w(R_BX, &t1);
-        rtl_pop(&t1); rtl_sr_w(R_DX, &t1);
-        rtl_pop(&t1); rtl_sr_w(R_CX, &t1);
-        rtl_pop(&t1); rtl_sr_w(R_AX, &t1);
-    }
-    else {
-        rtl_pop(&t1); rtl_sr_l(R_EDI, &t1);
-        rtl_pop(&t1); rtl_sr_l(R_ESI, &t1);
-        rtl_pop(&t1); rtl_sr_l(R_EBP, &t1);
-        rtl_pop(&t1);
-        rtl_pop(&t1); rtl_sr_l(R_EBX, &t1);
-        rtl_pop(&t1); rtl_sr_l(R_EDX, &t1);
-        rtl_pop(&t1); rtl_sr_l(R_ECX, &t1);
-        rtl_pop(&t1); rtl_sr_l(R_EAX, &t1);
-    }
-    print_asm("popa");
+  rtl_pop(&reg_l(R_EDI));
+  rtl_pop(&reg_l(R_ESI));
+  rtl_pop(&reg_l(R_EBP));
+  rtl_pop(&t0);
+  rtl_pop(&reg_l(R_EBX));
+  rtl_pop(&reg_l(R_EDX));
+  rtl_pop(&reg_l(R_ECX));
+  rtl_pop(&reg_l(R_EAX));
+  
+  print_asm("popa");
 }
 
 make_EHelper(leave) {
-  //TODO();
-  rtl_mv(&cpu.esp, &cpu.ebp);
-  rtl_pop(&cpu.ebp);
+  rtl_mv(&reg_l(R_ESP), &reg_l(R_EBP));
+  rtl_pop(&reg_l(R_EBP));
+  
   print_asm("leave");
 }
 
 make_EHelper(cltd) {
   if (decoding.is_operand_size_16) {
-    //TODO();
-    rtl_lr_w(&t0, R_AX);
-    rtl_sext(&t0, &t0, 2);
-    rtl_sari(&t0, &t0, 16);
-    rtl_sr_w(R_DX, &t0);
+    rtl_sext(&t0, &reg_l(R_EAX), 2);
+    rtl_shri(&reg_l(R_EDX), &t0, 16);
   }
   else {
-    //TODO();
-    rtl_lr_l(&t0, R_EAX);
-    rtl_sari(&t0, &t0, 31);
-    rtl_sr_l(R_EDX, &t0);
+    rtl_sari(&reg_l(R_EDX), &reg_l(R_EAX), 31);
   }
 
   print_asm(decoding.is_operand_size_16 ? "cwtl" : "cltd");
@@ -102,16 +70,12 @@ make_EHelper(cltd) {
 
 make_EHelper(cwtl) {
   if (decoding.is_operand_size_16) {
-    //TODO();
-    rtl_lr_b(&t0, R_AL);
-    rtl_sext(&t0, &t0, 1);
-    rtl_sr_w(R_AX, &t0);
+    rtl_shli(&reg_l(R_EAX), &reg_l(R_EAX), 24);
+    rtl_sari(&reg_l(R_EAX), &reg_l(R_EAX), 8);
+    rtl_shri(&reg_l(R_EAX), &reg_l(R_EAX), 16);
   }
   else {
-    //TODO();
-    rtl_lr_w(&t0, R_AX);
-    rtl_sext(&t0, &t0, 2);
-    rtl_sr_l(R_EAX, &t0);
+    rtl_sext(&reg_l(R_EAX), &reg_l(R_EAX), 2);
   }
 
   print_asm(decoding.is_operand_size_16 ? "cbtw" : "cwtl");
@@ -135,3 +99,12 @@ make_EHelper(lea) {
   operand_write(id_dest, &t2);
   print_asm_template2(lea);
 }
+
+make_EHelper(xchg) {
+  rtl_li(&t0, id_src->val);
+  operand_write(id_dest, &t0);
+  rtl_li(&t0, id_dest->val);
+  operand_write(id_src, &t0);
+  print_asm_template2(xchg);
+}
+
