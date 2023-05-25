@@ -27,20 +27,24 @@ void load_prog(const char *filename) {
 }
 
 static PCB *current_game = &pcb[0];
+
 void switch_game() {
   current_game = (current_game == &pcb[0] ? &pcb[2] : &pcb[0]);
 }
 
 _RegSet* schedule(_RegSet *prev) {
-
-  // save the context pointer
-  current->tf = prev;
-
-  // always select pcb[0] as the new process
-  current = (current == current_game ? &pcb[1] : current_game);
-
-  // TODO: switch to the new address space,
-  // then return the new context
+  if (current)
+    current->tf = prev;
+  static int count_game = 0;
+  
+  if (count_game >= 100 && current != &pcb[1]) {
+    current = &pcb[1];
+    count_game = 0;
+  }
+  else {
+    current = current_game;
+    count_game++;
+  }
   _switch(&current->as);
   return current->tf;
 }

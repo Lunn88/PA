@@ -41,7 +41,7 @@ void _asye_init(_RegSet*(*h)(_Event, _RegSet*)) {
 
   idt[0x81] = GATE(STS_TG32, KSEL(SEG_KCODE), vectrap, DPL_KERN);
 
-  //idt[0x20] = GATE(STS_TG32, KSEL(SEG_KCODE), vectime, DPL_KERN);
+  idt[0x20] = GATE(STS_TG32, KSEL(SEG_KCODE), vectime, DPL_KERN);
 
   set_idt(idt, sizeof(idt));
 
