@@ -1,5 +1,5 @@
 #include "nemu.h"
-
+#include "device/mmio.h"
 #define PMEM_SIZE (128 * 1024 * 1024)
 
 #define pmem_rw(addr, type) *(type *)({\
@@ -7,80 +7,93 @@
     guest_to_host(addr); \
     })
 
-// Page directory and page table constants
-#define PGSHFT    12      // log2(PGSIZE)
-#define PTXSHFT   12      // Offset of PTX in a linear address
-#define PDXSHFT   22      // Offset of PDX in a linear address
-
-// Page table/directory entry flags
-#define PTE_P     0x001     // Present
-#define PTE_A     0x020     // Accessed
-#define PTE_D     0x040     // Dirty
-
-#define PDX(va)     (((uint32_t)(va) >> PDXSHFT) & 0x3ff)
-#define PTX(va)     (((uint32_t)(va) >> PTXSHFT) & 0x3ff)
-#define OFF(va)     ((uint32_t)(va) & 0xfff)
-
-// Address in page table or page directory entry
-#define PTE_ADDR(pte)   ((uint32_t)(pte) & ~0xfff)
-#define PG_BEGIN(va)   ((va) & ~0xfff)
-
 uint8_t pmem[PMEM_SIZE];
 
-int is_mmio(paddr_t addr);
-uint32_t mmio_read(paddr_t addr, int len, int map_NO);
-void mmio_write(paddr_t addr, int len, uint32_t data, int map_NO);
 /* Memory accessing interfaces */
 
 uint32_t paddr_read(paddr_t addr, int len) {
-  int map_NO;
-  if ((map_NO = is_mmio(addr)) < 0)
-    return pmem_rw(addr, uint32_t) & (~0u >> ((4 - len) << 3));
-  return mmio_read(addr, len, map_NO);
+  int mmio_id = is_mmio(addr);
+  if (mmio_id != -1)
+    return mmio_read(addr, len, mmio_id);
+  return pmem_rw(addr, uint32_t) & (~0u >> ((4 - len) << 3));
 }
 
 void paddr_write(paddr_t addr, int len, uint32_t data) {
-  int map_NO;
-  if ((map_NO = is_mmio(addr)) < 0)
-    memcpy(guest_to_host(addr), &data, len);
+  int mmio_id = is_mmio(addr);
+  if (mmio_id != -1)
+    mmio_write(addr, len, data, mmio_id);
   else
-    mmio_write(addr, len, data, map_NO);
+    memcpy(guest_to_host(addr), &data, len);
 }
 
-// Access bit and dirty bit haven't been implemented!
-static paddr_t page_translate(vaddr_t addr) {
-  if (!cpu.PG)
-    return (paddr_t)addr;
-    
-  uint32_t PDE, PTE;
-  PDE = paddr_read(cpu.cr3 + 4 * PDX(addr), 4);
-  assert((PDE & PTE_P) == 1);
-  
-  PTE = paddr_read(PTE_ADDR(PDE) + 4 * PTX(addr), 4);
-  assert((PTE & PTE_P) == 1);
-  
-  return (paddr_t)(PTE_ADDR(PTE) | OFF(addr));
+paddr_t page_translate(vaddr_t vaddr, bool flag) {
+    PDE page_dir_item;
+    PTE page_table_item;
+    //页目录项的地址 = 页目录表基地址 + (页目录表索引) * 4
+    paddr_t page_dir_item_addr = (cpu.cr3.page_directory_base << 12) + ((vaddr >> 22) & 0x3ff) * 4;
+    //读取页目录项
+    page_dir_item.val = paddr_read(page_dir_item_addr, 4);
+    //验证present位
+    assert(page_dir_item.present);
+    //根据讲义，accessed为1，若为1表示该页被CPU访问过，由CPU置1，由操作系统清0
+    page_dir_item.accessed = 1;
+    //写回到页目录项所在地址
+    paddr_write(page_dir_item_addr, 4, page_dir_item.val);
+    //页表项的地址 = 页目录表项对应的页表基址 + 页表索引 * 4
+    paddr_t page_table_item_addr = (page_dir_item.page_frame << 12) + ((vaddr >> 12) & 0x3ff) * 4;
+    //读取页表项
+    page_table_item.val = paddr_read(page_table_item_addr, 4);
+    //验证present位
+    assert(page_table_item.present);
+    page_table_item.accessed = 1;
+    //如果是写操作，脏位设为1，当CPU对一个页执行写操作时，设置对应页表项的D位为1，此项仅针对页表项有效，并不会修改页目录表项的D位
+    if (flag) page_table_item.dirty = 1;
+    //写回到页表项所在地址
+    paddr_write(page_table_item_addr, 4, page_table_item.val);
+    paddr_t paddr = (page_table_item.page_frame << 12) + (vaddr & 0xfff);
+    //Log("vaddr: %#10x, paddr: %#10x", vaddr, paddr);
+    return paddr;
 }
 
 uint32_t vaddr_read(vaddr_t addr, int len) {
-  vaddr_t next_page_begin = PG_BEGIN(addr + len - 1);
-  if (PG_BEGIN(addr) != next_page_begin) {
-    int fst_half_len = next_page_begin - addr;
-    uint32_t fst_val = paddr_read(page_translate(addr), fst_half_len);
-    uint32_t snd_val = paddr_read(page_translate(next_page_begin), len - fst_half_len);
-    return ((snd_val << (fst_half_len << 3)) | fst_val);
-  }   
-  else 
-    return paddr_read(page_translate(addr), len);
+	paddr_t paddr;
+    if(cpu.cr0.paging) {
+        //跨页访存 0x1000 = 1000000000000 = 2^12 = 4KB
+        if ((addr & 0xfff) + len > 0x1000) {
+			union {
+			  uint8_t bytes[4];
+			  uint32_t dword;
+			} data = {0};
+			for (int i = 0; i < len; i++) {
+			  paddr = page_translate(addr + i, false);
+			  data.bytes[i] = (uint8_t)paddr_read(paddr, 1);
+			}
+			return data.dword;
+        }
+        else {
+            paddr_t paddr = page_translate(addr, false);
+            return paddr_read(paddr, len);
+        }
+    }
+    else
+        return paddr_read(addr, len);
 }
 
 void vaddr_write(vaddr_t addr, int len, uint32_t data) {
-  vaddr_t next_page_begin = PG_BEGIN(addr + len - 1);
-  if (PG_BEGIN(addr) != next_page_begin) {
-    int fst_half_len = next_page_begin - addr;
-    paddr_write(page_translate(addr), fst_half_len, data);
-    paddr_write(page_translate(next_page_begin), len - fst_half_len, (data >> (fst_half_len << 3)));
-  } 
-  else
-    paddr_write(page_translate(addr), len, data);
+	paddr_t paddr;
+    if(cpu.cr0.paging) {
+        //跨页访存
+        if ((addr & 0xfff) + len > 0x1000)
+		    for (int i = 0; i < len; i++) {
+			  paddr = page_translate(addr + i, true);
+			  paddr_write(paddr, 1, data);
+			  data >>= 8;
+			}
+        else {
+            paddr_t paddr = page_translate(addr, true);
+            return paddr_write(paddr, len, data);
+        }
+    }
+    else
+        paddr_write(addr, len, data);
 }

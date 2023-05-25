@@ -5,7 +5,7 @@
 
 #include "rtl.h"
 
-enum { OP_TYPE_REG, OP_TYPE_MEM, OP_TYPE_IMM, OP_TYPE_CREG };
+enum { OP_TYPE_REG, OP_TYPE_MEM, OP_TYPE_IMM };
 
 #define OP_STR_SIZE 40
 
@@ -61,7 +61,6 @@ typedef union {
 
 void load_addr(vaddr_t *, ModR_M *, Operand *);
 void read_ModR_M(vaddr_t *, Operand *, bool, Operand *, bool);
-void read_cr_r(vaddr_t *, Operand *, bool, Operand *, bool);
 
 void operand_write(Operand *, rtlreg_t *);
 
@@ -113,8 +112,4 @@ make_DHelper(in_dx2a);
 make_DHelper(out_a2I);
 make_DHelper(out_a2dx);
 
-make_DHelper(r2a);
-
-make_DHelper(r2cr);
-make_DHelper(cr2r);
 #endif
