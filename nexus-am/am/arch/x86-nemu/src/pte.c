@@ -66,6 +66,15 @@ void _switch(_Protect *p) {
 }
 
 void _map(_Protect *p, void *va, void *pa) {
+  PDE *pt = (PDE*)p->ptr;
+  PDE *pde = &pt[PDX(va)];
+  if (!(*pde & PTE_P)) {
+    *pde = PTE_P | PTE_W | PTE_U | (uint32_t)palloc_f();
+  }
+  PTE *pte = &((PTE*)PTE_ADDR(*pde))[PTX(va)];
+  if (!(*pte & PTE_P)) {
+    *pte = PTE_P | PTE_W | PTE_U | (uint32_t)pa;
+  }
 }
 
 void _unmap(_Protect *p, void *va) {
