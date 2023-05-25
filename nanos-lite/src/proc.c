@@ -37,7 +37,7 @@ _RegSet* schedule(_RegSet *prev) {
     current->tf = prev;
   static int count_game = 0;
   
-  if (count_game >= 1 && current != &pcb[1]) {
+  if (count_game >= 10 && current != &pcb[1]) {
     current = &pcb[1];
     count_game = 0;
   }
