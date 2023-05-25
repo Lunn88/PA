@@ -37,7 +37,7 @@ _RegSet* schedule(_RegSet *prev) {
     current->tf = prev;
   static int count_game = 0;
   // time for game and hello is 100 : 1 
-  if (count_game >= 5 && current != &pcb[1]) {
+  if (count_game >= 100 && current != &pcb[1]) {
     current = &pcb[1];
     count_game = 0;
   }
