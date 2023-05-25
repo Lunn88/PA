@@ -59,7 +59,7 @@ make_EHelper(int) {
 }
 
 make_EHelper(iret) {
-    // TODO();
+  // TODO();
   rtl_pop(&decoding.jmp_eip);
   decoding.is_jmp = 1;
   rtl_pop(&t0);
@@ -73,7 +73,7 @@ void pio_write(ioaddr_t, int, uint32_t);
 
 make_EHelper(in) {
   //TODO();
-  t1 = pio_read(id_src->val, id_dest->width);
+  t0 = pio_read(id_src->val, id_dest->width);
   operand_write(id_dest, &t1);
   print_asm_template2(in);
 
