@@ -5,6 +5,7 @@
 static PCB pcb[MAX_NR_PROC];
 static int nr_proc = 0;
 PCB *current = NULL;
+PCB *current_game = &pcb[0];
 
 uintptr_t loader(_Protect *as, const char *filename);
 
@@ -26,7 +27,6 @@ void load_prog(const char *filename) {
   pcb[i].tf = _umake(&pcb[i].as, stack, stack, (void *)entry, NULL, NULL);
 }
 
-static PCB *current_game = &pcb[0];
 
 void switch_game() {
   current_game = (current_game == &pcb[0] ? &pcb[2] : &pcb[0]);
