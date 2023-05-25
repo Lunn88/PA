@@ -27,17 +27,17 @@ void load_prog(const char *filename) {
   pcb[i].tf = _umake(&pcb[i].as, stack, stack, (void *)entry, NULL, NULL);
 }
 
-
 void switch_game() {
   current_game = (current_game == &pcb[0] ? &pcb[2] : &pcb[0]);
 }
 
 _RegSet* schedule(_RegSet *prev) {
+  // printf("Hello from schedule\n");
   if (current)
     current->tf = prev;
   static int count_game = 0;
-  
-  if (count_game >= 1 && current != &pcb[1]) {
+  // time for game and hello is 100 : 1 
+  if (count_game >= 100 && current != &pcb[1]) {
     current = &pcb[1];
     count_game = 0;
   }
@@ -45,6 +45,6 @@ _RegSet* schedule(_RegSet *prev) {
     current = current_game;
     count_game++;
   }
-  _switch(&current->as);
+  _switch(&current->as); 
   return current->tf;
 }
