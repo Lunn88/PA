@@ -66,32 +66,40 @@ void _switch(_Protect *p) {
 }
 
 void _map(_Protect *p, void *va, void *pa) {
-  PDE *pt = (PDE*)p->ptr;
-  PDE *pde = &pt[PDX(va)];
-  if (!(*pde & PTE_P)) {
-    *pde = PTE_P | PTE_W | PTE_U | (uint32_t)palloc_f();
+  PDE *pde = ((PDE *)p->ptr) + PDX(va);
+  PTE *ptab;
+  if ((*pde & PTE_P) == 0) {
+    ptab = (PTE *)(palloc_f());
+    *pde = ((uint32_t)ptab & ~0xfff) | PTE_P;   
   }
-  PTE *pte = &((PTE*)PTE_ADDR(*pde))[PTX(va)];
-  if (!(*pte & PTE_P)) {
-    *pte = PTE_P | PTE_W | PTE_U | (uint32_t)pa;
-  }
+  else 
+    ptab = (PTE *)PTE_ADDR(*pde);
+  ptab[PTX(va)] = ((uint32_t)pa & ~0xfff) | PTE_P;
 }
 
 void _unmap(_Protect *p, void *va) {
 }
 
 _RegSet *_umake(_Protect *p, _Area ustack, _Area kstack, void *entry, char *const argv[], char *const envp[]) {
-  struct {_RegSet *tf;} *pcb = ustack.start;
-
-  uint32_t *stack = (uint32_t *)(ustack.end - 4);
-
-  for (int i = 0; i < 3; i++)
-    *stack-- = 0;
-
-  pcb->tf = (void*)(stack - sizeof(_RegSet));
-  pcb->tf->eflags = 0x2 | (1 << 9);
-  pcb->tf->cs = 8;
-  pcb->tf->eip = (uintptr_t)entry;
-
-  return pcb->tf;
+  uint32_t *pstack = ustack.end;
+  *(--pstack) = 0;              // push envp
+  *(--pstack) = 0;              // push argv
+  *(--pstack) = 0;              // push argc
+  *(--pstack) = 0xffffffff;     // pad ret_address for _start
+  
+  *(--pstack) = 0x202;            // push eflags
+  *(--pstack) = 8;                // push cs
+  *(--pstack) = (uint32_t)entry;  // push iret_addr
+  
+  *(--pstack) = 0;                    // push error_code
+  *(--pstack) = 0x81;                 // push irq
+  *(--pstack) = 0;                    // push eax
+  *(--pstack) = 0;                    // push ecx
+  *(--pstack) = 0;                    // push edx
+  *(--pstack) = 0;                    // push ebx
+  *(--pstack) = 0;                    // push esp
+  *(--pstack) = (uint32_t)ustack.end; // push ebp
+  *(--pstack) = 0;                    // push esi
+  *(--pstack) = 0;                    // push edi
+  return (_RegSet *)pstack;
 }
