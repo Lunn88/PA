@@ -9,6 +9,7 @@ void init_ramdisk(void);
 void init_device(void);
 void init_irq(void);
 void init_fs(void);
+void load_prog(const char *);
 uint32_t loader(_Protect *, const char *);
 
 int main() {
@@ -30,8 +31,9 @@ int main() {
 
   init_fs();
 
-  uint32_t entry = loader(NULL, "/bin/pal");
-  ((void (*)(void))entry)();
-
+  //uint32_t entry = loader(NULL, "/bin/pal");
+  //((void (*)(void))entry)();
+  load_prog("/bin/dummy");
+  
   panic("Should not reach here");
 }

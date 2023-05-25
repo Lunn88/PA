@@ -2,6 +2,7 @@
 #include "monitor/expr.h"
 #include "monitor/watchpoint.h"
 #include "nemu.h"
+
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
@@ -35,103 +36,97 @@ static int cmd_q(char *args) {
   return -1;
 }
 
-static int cmd_help(char *args);
-static int cmd_si(char *args){
-    char *arg = strtok(NULL, " ");
-	if (arg == NULL) cpu_exec(1);
-	else cpu_exec(atoi(arg));
-	return 0;
-}
-static int cmd_info(char *args){
-    char *arg = strtok(NULL, " ");
-    // 分割字符
-	if (arg == NULL){
-		puts("Missing parameter.");
-		return 0;
-	}
-    if (strcmp(arg, "r") == 0)
-    {
-        // 依次打印所有寄存器
-        // 这里给个例子：打印出 eax 寄存器的值
-		for (int i = 0; i < 8; i++)
-			printf("%s:\t0x%08x\t0x%08x\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
-
-    }
-	else if (strcmp(arg, "w") == 0)
-    {
-        // 这里我们会在 PA1.3 中实现
-		list_watchpoint();
-    }
+static int cmd_si(char *args) {
+  char *arg = strtok(NULL," ");
+  int steps = 0;
+  if(arg==NULL){
+    cpu_exec(1);  //one step
     return 0;
+  }
+  sscanf(arg,"%d",&steps);
+  if(steps<-1){
+    printf("Error Integer!\n");
+    return 0;
+  }
+  cpu_exec(steps);
+  return 0;
 }
-static int cmd_x(char *args){
-    //分割字符串，得到起始位置和要读取的次数
-    char *arg1 = strtok(NULL, " ");
-	if (arg1 == NULL){
-		puts("Missing parameter.");
-		return 0;
-	}
-    char *s = strtok(NULL, " ");
-	if (s == NULL){
-		puts("Missing parameter.");
-        return 0;
-    }
-	uint32_t n = 0;
 
-	if (s[0] == '0' && s[0] == 'x'){
-		for (int i = 2; (s[i] >= '0' && s[i] <= '9') || (s[i] >= 'a' && s[i] <= 'z') || (s[i] >='A' && s[i] <= 'Z'); i++){
-			if (s[i] > '9')
-				n = 16 * n + (10 + s[i] - 'a');
-			else
-				n = 16 * n + (s[i] - '0');
-		}
-	}
-	else {
-		bool success = true;
-		n = expr(s, &success);
-		if (!success || n == -1162167624){
-			puts("Missing parameter.");
-			return 0;
-		} 
-	}
-    //循环使用 vaddr_read 函数来读取内存
-	puts("Address         Dword block\tByte sequence");
-    for(int i = 0; i < atoi(arg1); i++){
-        uint32_t instr = vaddr_read(n, 4);    //如何调用，怎么传递参数，请阅读代码
-		uint8_t *p_instr = (void *)&instr;
-		printf("0x%08x\t0x%08x\t", n, instr);
-		for (int i = 0; i < 4; i++) 
-			printf("%02x ", p_instr[i]);
-		n += 4;
-		puts("");
-    }
-	return 0;
+static int cmd_info(char *args){
+  char *arg=strtok(NULL," ");
+  if(strcmp(arg,"r") == 0){
+  //info r
+    for(int i=0;i<8;i++)
+      printf("%s \t0x%x \t%d\n",regsl[i],cpu.gpr[i]._32,cpu.gpr[i]._32);
+      printf("eip \t0x%x \t%d\n",cpu.eip,cpu.eip);
+  }
+  else if(strcmp(arg,"w") == 0){
+  //info w
+    print_wp();
+  }
+  return 0;
 }
+
+static int cmd_x(char *args){
+  char *N = strtok(NULL," ");
+  char *EXPR = strtok(NULL," ");
+  int len;
+
+  len=atoi(N);
+
+  bool flag = true;
+  vaddr_t address = expr(EXPR, &flag);
+  if (!flag){
+    printf("Error: wrong expr!\n");
+    return 0;
+  }
+
+  for(int i=0;i<len;i++){
+    uint32_t data = vaddr_read(address+i*4,4);
+    printf("0x%08x\t",address+i*4);
+    for(int j=0;j<4;j++){
+      printf("0x%02x\t",data&0xff);
+      data=data>>8;
+    }
+    printf("\n");
+  }
+  return 0;
+}
+
 static int cmd_p(char *args){
 	bool success = true;
+	if(args == NULL){
+		printf("Error: missing arguments!\n");
+	    return 0;
+	}
 	uint32_t result = expr(args, &success);
-	if (success == true && result != -1162167624) printf("0x%08x\n", result);
-	return 0;
-}	
-static int cmd_w(char *args){
-//     char *arg = strtok(args, " ");
-// 	if (arg == NULL){
-// 		puts("Missing parameter.");
-// 		return 0;
-// 	}
-	set_watchpoint(args);
-	return 0;
-}	
-static int cmd_d(char *args){
-//     char *arg = strtok(NULL, " ");
-// 	if (arg == NULL){
-// 		puts("Missing parameter.");
-// 		return 0;
-// 	}
-	int result = delete_watchpoint(atoi(args));
-	if (!result) puts("error!");
-	return 0;
+	if(success)
+	  printf("Expresssion: %s = %d\n", args, result);
+	else
+	  printf("Error: wrong expression!\n");
+    return 0;
 }
+
+static int cmd_w(char *args){
+  if(args == NULL){
+    printf("Error: missing arguments!\n");
+    return 0;
+  }
+  new_wp(args);
+  return 0;
+}
+
+static int cmd_d(char *args){
+  if(args == NULL){
+    printf("Error: missing arguments!\n");
+    return 0;
+  }
+  int n = atoi(args);
+  free_wp(n);
+  return 0;
+}
+
+static int cmd_help(char *args);
 
 static struct {
   char *name;
@@ -141,13 +136,12 @@ static struct {
   { "help", "Display informations about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-  { "si", "Single step execution", cmd_si },
-  { "info", "Print program status", cmd_info },
-  { "x", "Scan memory", cmd_x },
-  { "p", "Expression evaluation", cmd_p },
-  { "w", "Add watchpoints", cmd_w },
-  { "d", "Delete watchpoints", cmd_d },
-
+  {"si", "Single ", cmd_si},
+  {"info","INFO",cmd_info},
+  {"x","Scan memory",cmd_x},
+  {"p","Expr Cal",cmd_p},
+  { "w" , "Set watchpoint", cmd_w},
+  { "d" , "Delete watchpoint", cmd_d}
   /* TODO: Add more commands */
 
 };

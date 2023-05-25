@@ -1,5 +1,6 @@
 #include "nemu.h"
 #include "device/mmio.h"
+
 #define PMEM_SIZE (128 * 1024 * 1024)
 
 #define pmem_rw(addr, type) *(type *)({\
@@ -13,17 +14,20 @@ uint8_t pmem[PMEM_SIZE];
 
 uint32_t paddr_read(paddr_t addr, int len) {
   int mmio_id = is_mmio(addr);
-  if (mmio_id != -1)
+  if (mmio_id != -1) {
     return mmio_read(addr, len, mmio_id);
+  }
   return pmem_rw(addr, uint32_t) & (~0u >> ((4 - len) << 3));
 }
 
 void paddr_write(paddr_t addr, int len, uint32_t data) {
   int mmio_id = is_mmio(addr);
-  if (mmio_id != -1)
+  if (mmio_id != -1) {
     mmio_write(addr, len, data, mmio_id);
-  else
+  }
+  else {
     memcpy(guest_to_host(addr), &data, len);
+  }
 }
 
 paddr_t page_translate(vaddr_t vaddr, bool flag) {
@@ -60,19 +64,19 @@ uint32_t vaddr_read(vaddr_t addr, int len) {
     if(cpu.cr0.paging) {
         //跨页访存 0x1000 = 1000000000000 = 2^12 = 4KB
         if ((addr & 0xfff) + len > 0x1000) {
-			union {
-			  uint8_t bytes[4];
-			  uint32_t dword;
-			} data = {0};
-			for (int i = 0; i < len; i++) {
-			  paddr = page_translate(addr + i, false);
-			  data.bytes[i] = (uint8_t)paddr_read(paddr, 1);
-			}
-			return data.dword;
+		union {
+		  uint8_t bytes[4];
+		  uint32_t dword;
+		} data = {0};
+		for (int i = 0; i < len; i++) {
+		  paddr = page_translate(addr + i, false);
+		  data.bytes[i] = (uint8_t)paddr_read(paddr, 1);
+		}
+		return data.dword;
         }
         else {
-            paddr_t paddr = page_translate(addr, false);
-            return paddr_read(paddr, len);
+		paddr_t paddr = page_translate(addr, false);
+		return paddr_read(paddr, len);
         }
     }
     else
@@ -80,15 +84,15 @@ uint32_t vaddr_read(vaddr_t addr, int len) {
 }
 
 void vaddr_write(vaddr_t addr, int len, uint32_t data) {
-	paddr_t paddr;
+    paddr_t paddr;
     if(cpu.cr0.paging) {
         //跨页访存
         if ((addr & 0xfff) + len > 0x1000)
-		    for (int i = 0; i < len; i++) {
-			  paddr = page_translate(addr + i, true);
-			  paddr_write(paddr, 1, data);
-			  data >>= 8;
-			}
+	    for (int i = 0; i < len; i++) {
+		  paddr = page_translate(addr + i, true);
+		  paddr_write(paddr, 1, data);
+		  data >>= 8;
+		}
         else {
             paddr_t paddr = page_translate(addr, true);
             return paddr_write(paddr, len, data);
