@@ -29,29 +29,17 @@ static inline make_DopHelper(I) {
 /* sign immediate */
 static inline make_DopHelper(SI) {
   assert(op->width == 1 || op->width == 4);
-
   op->type = OP_TYPE_IMM;
 
-  /* TODO: Use instr_fetch() to read `op->width' bytes of memory
+  /* Use instr_fetch() to read `op->width' bytes of memory
    * pointed by `eip'. Interpret the result as a signed immediate,
    * and assign it to op->simm.
-   *
-   op->simm = ???
    */
-  //TODO();
-  if (op->width == 4)
-    op->simm = instr_fetch(eip, op->width);
-  else{
-
-    t0 = (uint16_t)instr_fetch(eip, op->width);
-
-    rtl_sext(&t1, &t0, op->width);
-
-    op->simm = t1;
-
-  }
-
-  rtl_li(&op->val, op->simm);
+  op->simm = instr_fetch(eip, op->width);
+  if (op->width == 1)
+    op->simm = (int8_t)op->simm;
+  if (load_val)
+    rtl_li(&op->val, op->simm);
 
 #ifdef DEBUG
   snprintf(op->str, OP_STR_SIZE, "$0x%x", op->simm);
@@ -318,5 +306,23 @@ make_DHelper(out_a2dx) {
 void operand_write(Operand *op, rtlreg_t* src) {
   if (op->type == OP_TYPE_REG) { rtl_sr(op->reg, op->width, src); }
   else if (op->type == OP_TYPE_MEM) { rtl_sm(&op->addr, op->width, src); }
+  else if (op->type == OP_TYPE_CREG) { rtl_scr(op->reg, src); }
   else { assert(0); }
 }
+
+make_DHelper(r2a) {
+  decode_op_a(eip, id_dest, true);
+  decode_op_r(eip, id_src, true);
+}
+
+// cr0, cr3 <- r
+make_DHelper(r2cr) {
+  read_cr_r(eip, id_dest, false, id_src, true);
+}
+
+// r <- cr0, cr3
+make_DHelper(cr2r) {
+  read_cr_r(eip, id_src, true, id_dest, false);
+}
+
+
