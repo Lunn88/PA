@@ -1,4 +1,5 @@
 #include <x86.h>
+#include <arch.h>
 
 #define PG_ALIGN __attribute((aligned(PGSIZE)))
 
@@ -66,30 +67,36 @@ void _switch(_Protect *p) {
 }
 
 void _map(_Protect *p, void *va, void *pa) {
-  PDE *pt = (PDE*)p->ptr;
-  PDE *pde = &pt[PDX(va)];
-  if (!(*pde & PTE_P)) {
-    *pde = PTE_P | PTE_W | PTE_U | (uint32_t)palloc_f();
+  PDE *pde, *pgdir = p->ptr;
+  PTE *pgtab;
+
+  pde = &pgdir[PDX(va)];
+  if (*pde & PTE_P) {
+    pgtab = (PTE *)PTE_ADDR(*pde);
+  } else {
+    pgtab = (PTE *)palloc_f();
+    for (int i = 0; i < NR_PTE; i ++) {
+      pgtab[i] = 0;
+    }
+    *pde = PTE_ADDR(pgtab) | PTE_P;
   }
-  PTE *pte = &((PTE*)PTE_ADDR(*pde))[PTX(va)];
-  if (!(*pte & PTE_P)) {
-    *pte = PTE_P | PTE_W | PTE_U | (uint32_t)pa;
-  }
+  pgtab[PTX(va)] = PTE_ADDR(pa) | PTE_P;
 }
 
 void _unmap(_Protect *p, void *va) {
 }
 
 _RegSet *_umake(_Protect *p, _Area ustack, _Area kstack, void *entry, char *const argv[], char *const envp[]) {
-  struct {_RegSet *tf;} *pcb = ustack.start;
+  struct { _RegSet *tf; } *pcb = ustack.start;
 
   uint32_t *stack = (uint32_t *)(ustack.end - 4);
 
+  // stack frame of _start()
   for (int i = 0; i < 3; i++)
     *stack-- = 0;
 
-  pcb->tf = (void*)(stack - sizeof(_RegSet));
-  pcb->tf->eflags = 0x2 | (1 << 9);
+  pcb->tf = (void *)(stack - sizeof(_RegSet));
+  pcb->tf->eflags = 0x2 | (1 << 9);  /* pre-set value | eflags.IF */
   pcb->tf->cs = 8;
   pcb->tf->eip = (uintptr_t)entry;
 
