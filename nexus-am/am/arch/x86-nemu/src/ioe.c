@@ -4,10 +4,6 @@
 #define RTC_PORT 0x48   // Note that this is not standard
 static unsigned long boot_time;
 
-#define I8042_DATA_PORT 0x60
-
-#define I8042_STATUS_PORT 0x64
-
 void _ioe_init() {
   boot_time = inl(RTC_PORT);
 }
@@ -26,39 +22,19 @@ _Screen _screen = {
 extern void* memcpy(void *, const void *, int);
 
 void _draw_rect(const uint32_t *pixels, int x, int y, int w, int h) {
-  int len = sizeof(uint32_t) * ( (x + w >= _screen.width) ? _screen.width - x : w );
-
-  uint32_t *p_fb = &fb[y * _screen.width + x];
-
-  for (int j = 0; j < h; j ++) {
-
-    if (y + j < _screen.height) {
-
-      memcpy(p_fb, pixels, len);
-
-    }
-
-    else {
-
-      break;
-
-    }
-
-    p_fb += _screen.width;
-
-    pixels += w;
-
-  }
+  int dy;
+  for (dy = 0; dy < h; ++dy)
+    memcpy(fb + (y + dy)*_screen.width + x, pixels + w * dy, sizeof(uint32_t) * w);
 }
 
 void _draw_sync() {
 }
 
-int _read_key() {
+#define I8042_DATA_PORT 0x60
+#define I8042_STATUS_PORT 0x64
 
-  if (inb(I8042_STATUS_PORT) == 1) {
+int _read_key() {
+  if (inb(I8042_STATUS_PORT) == 1) 
     return inl(I8042_DATA_PORT);
-  }
   return _KEY_NONE;
 }
-
